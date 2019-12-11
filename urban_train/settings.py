@@ -22,7 +22,7 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='apjfqc9e8r-9eq3r3u49u4399r43-@#%^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['172.105.148.155']
+ALLOWED_HOSTS = ['172.105.148.155', 'localhost', '127.0.0.1']
 
 # Application definition
 
