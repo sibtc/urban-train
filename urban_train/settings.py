@@ -20,7 +20,8 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='apjfqc9e8r-9eq3r3u49u4399r43-@#%^
 # SECRET_KEY = 'bn8&xf8i916nuk=ma8wsi420yhmu%kly4@5i#d-ir!@&+0b+az'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = env.bool('DJANGO_DEBUG', False)
 
 ALLOWED_HOSTS = ['172.105.148.155', 'localhost', '127.0.0.1']
 
@@ -70,16 +71,23 @@ WSGI_APPLICATION = 'urban_train.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'urban_prod',
+#         'USER': 'u_urban',
+#         'PASSWORD': '123',
+#         'HOST': 'localhost',
+#         'PORT': '',
+#     }
+# }
+
+# postgres://USER:PASSWORD@HOST:PORT/NAME
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'urban_prod',
-        'USER': 'u_urban',
-        'PASSWORD': '123',
-        'HOST': 'localhost',
-        'PORT': '',
-    }
+    'default': env.db('DATABASE_URL', default='postgres:///promosys'),
 }
+DATABASES['default']['ATOMIC_REQUESTS'] = True
+# DATABASES['default']['conn_max_age'] = 600
 
 
 # Password validation
