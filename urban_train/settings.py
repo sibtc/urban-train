@@ -71,17 +71,6 @@ WSGI_APPLICATION = 'urban_train.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'urban_prod',
-#         'USER': 'u_urban',
-#         'PASSWORD': '123',
-#         'HOST': 'localhost',
-#         'PORT': '',
-#     }
-# }
-
 # postgres://USER:PASSWORD@HOST:PORT/NAME
 DATABASES = {
     'default': env.db('DATABASE_URL', default='postgres:///promosys'),
