@@ -23,7 +23,7 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='apjfqc9e8r-9eq3r3u49u4399r43-@#%^
 # DEBUG = True
 DEBUG = env.bool('DJANGO_DEBUG', False)
 
-ALLOWED_HOSTS = ['gastosluxu.com.br', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['www.gastosluxu.com.br', 'localhost', '127.0.0.1']
 
 # Application definition
 
