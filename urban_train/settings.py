@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'cruds_adminlte',
     # apps
     'core',
-    'website'
+    # 'website'
 ]
 
 MIDDLEWARE = [
