@@ -1,0 +1,41 @@
+{% extends '_base.html' %}
+
+{% load widget_tweaks %}
+
+{% block title %}Entrar | {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="card-header">
+      <h1>Entrar</h1>
+  </div>
+  <form class="form-signin" method="post" novalidate>
+      {% csrf_token %}
+      {% for error in form.non_field_errors  %}
+          <div class="alert alert-danger">
+            {{ error }}
+          </div>
+      {% endfor %}
+      <div class="form-group{% if form.username.errors %} has-error{% endif %}">
+        <label class="sr-only" for="{{ form.username.auto_id }}">{{ form.username.label }}</label>
+        <div>
+          {% render_field form.username class="form-control" placeholder="Apelido / Usuário" %}
+          {% for error in form.username.errors %}
+            <span class="help-block">{{ error }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group{% if form.password.errors %} has-error{% endif %}">
+        <label class="sr-only" for="{{ form.password.auto_id }}">{{ form.password.label }}</label>
+        <div>
+          {% render_field form.password class="form-control" placeholder="Password" %}
+          {% for error in form.password.errors %}
+            <span class="help-block">{{ error }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="form-group">
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Confirmar</button>
+      </div>
+  </form>
+{% endblock content %}
