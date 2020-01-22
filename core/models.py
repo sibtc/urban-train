@@ -1,7 +1,9 @@
 import re
 from django.db import models
-from django.core import validators
+from . import validators
 from django.contrib.auth.models import AbstractBaseUser,UserManager, PermissionsMixin
+from accounts import constants
+from datetime import datetime as dt
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -38,3 +40,56 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return str(self).split(" ")[0]
+
+
+
+class BaseManager(models.Manager):
+    """
+    Base Manager for Base model
+    """
+
+    def __init__(self):
+        super(BaseManager, self).__init__()
+
+    # If you are using newer versions of Django you will need to define this
+    # def get_queryset(self):
+    #     return super(BaseManager, self).get_queryset().filter(deleted=True)
+
+
+class Base(models.Model):
+    """
+    Base parent model for all the models
+    """
+    created_at = models.DateTimeField('Criado em', auto_now_add=True, null=True)
+    modified_at = models.DateTimeField('Atualizado em', auto_now=True, null=True)
+    status = models.BooleanField(choices=constants.STATUS, default=constants.ATIVO)
+
+    objects = BaseManager()
+
+    def __init__(self, *args, **kwargs):
+        super(Base, self).__init__(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+    # Override save method.
+    def save(self, *args, **kwargs):
+        if not self.created_at:
+            self.created_at = dt.now()
+
+        modified_at = kwargs.pop('update_timestamp', False)
+        if modified_at:
+            self.modified_at = dt.now()
+
+        super(Base, self).save(*args, **kwargs)
+
+    # Override delete method.
+    # def delete(self, **kwargs):
+    #     self._forced_delete = kwargs.pop('forced', False)
+    #     if not self._forced_delete:
+    #         model = self.__class__
+    #         kwargs.update({'deleted': True})
+    #         model.objects.using(self._state.db).filter(
+    #             pk=self.id).update(**kwargs)
+    #     else:
+    #         super(Base, self).delete(**kwargs)

@@ -1,7 +1,12 @@
-Django==2.2.7
 dj-static==0.0.6
-django-environ==0.4.5
-django-widget-tweaks==1.4.5
+Django==2.2.7
 django-cruds-adminlte==0.0.16
+django-debug-toolbar==2.1
+django-environ==0.4.5
+django-pandas==0.6.1
+django-select2==7.2.0
+django-widget-tweaks==1.4.5
 gunicorn==20.0.4
+pandas==0.25.3
 psycopg2==2.8.4
+

@@ -34,12 +34,12 @@
                     </a>
                     <ul class="treeview-menu">
                         <li>
-                            <a href="">
+                            <a href="{% url 'website_segmento_list' %}">
                                 <i class="fa fa-dollar"></i>{% trans "Comércio  " %}
                             </a>
                         </li>
                         <li>
-                            <a href="">
+                            <a href="{% url 'website_gasto_list' %}">
                                 <i class="fa fa-gears"></i>{% trans "Gasto" %}
                             </a>
                         </li>
@@ -54,13 +54,18 @@
                     </a>
                     <ul class="treeview-menu">
                         <li>
-                            <a href="">
+                            <a href="{% url 'website_pecas_list' %}">
                                 <i class="fa fa-dollar"></i>Peças
                             </a>
                         </li>
                         <li>
-                            <a href="">
-                                <i class="fa fa-gears"></i>KM Rodado
+                            <a href="{% url 'website_comercio_list' %}">
+                                <i class="fa fa-gears"></i>Comercio
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'website_city_list' %}">
+                                <i class="fa fa-gears"></i>Localidade
                             </a>
                         </li>
                     </ul>
@@ -74,17 +79,17 @@
                     </a>
                     <ul class="treeview-menu">
                         <li>
-                            <a href="">
+                            <a href="{% url 'website_rabbiit_list' %}">
                                 <i class="fa fa-dollar"></i>Rabbiit
                             </a>
                         </li>
                         <li>
-                            <a href="">
+                            <a href="{% url 'website_gasto_list' %}">
                                 <i class="fa fa-gears"></i>Planilha
                             </a>
                         </li>
                         <li>
-                            <a href="">
+                            <a href="{% url 'website_horatrabalhada_list' %}">
                                 <i class="fa fa-gears"></i>Hora Trabalhada
                             </a>
                         </li>
@@ -99,12 +104,12 @@
                     </a>
                     <ul class="treeview-menu">
                         <li>
-                            <a href="">
+                            <a href="{% url 'gastosPorMes' %}">
                                 <i class="fa fa-dollar"></i>{% trans "Gastos por mês" %}
                             </a>
                         </li>
                         <li>
-                            <a href="">
+                            <a href="{% url 'gastosPorSegmento' %}">
                                 <i class="fa fa-gears"></i>{% trans "Gastos Por Segmento" %}
                             </a>
                         </li>

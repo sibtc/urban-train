@@ -1,8 +1,8 @@
 from django.urls import path
-from .views import LoginView, LogoutView, HomePageView
+from accounts.views import LoginView, LogoutView, HomePageView
 
 
-app_name = "core"
+app_name = "accounts"
 
 
 urlpatterns = [

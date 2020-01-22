@@ -46,8 +46,9 @@ INSTALLED_APPS = [
     # Third-party
     'cruds_adminlte',
     # apps
-    'core',
-    # 'website'
+    # 'core',
+    'accounts',
+    'website'
 ]
 
 MIDDLEWARE = [
@@ -84,12 +85,23 @@ WSGI_APPLICATION = 'urban_train.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 # postgres://USER:PASSWORD@HOST:PORT/NAME
-DATABASES = {
-    'default': env.db('DATABASE_URL', default='postgres:///promosys'),
-}
-DATABASES['default']['ATOMIC_REQUESTS'] = True
+# DATABASES = {
+#     'default': env.db('DATABASE_URL', default='postgres:///promosys'),
+# }
+# DATABASES['default']['ATOMIC_REQUESTS'] = True
 # DATABASES['default']['conn_max_age'] = 600
 
+# If use POSTGRES and AWS
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ['RDS_DB_NAME'],
+        'USER': os.environ['RDS_USERNAME'],
+        'PASSWORD': os.environ['RDS_PASSWORD'],
+        'HOST': os.environ['RDS_HOSTNAME'],
+        'PORT': os.environ['RDS_PORT'],
+        }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -128,8 +140,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, '../static/')
 
 # auth
 LOGIN_URL = '/entrar/'
-AUTH_USER_MODEL = 'core.User'
+AUTH_USER_MODEL = 'accounts.User'
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'core.backends.ModelBackend',
+    'accounts.backends.ModelBackend',
 )
