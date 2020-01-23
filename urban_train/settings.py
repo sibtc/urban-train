@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # lib
     'widget_tweaks',
     # Third-party
+    'crispy_forms',
     'cruds_adminlte',
     # apps
     # 'core',
