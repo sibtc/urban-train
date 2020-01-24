@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     # General use templates & template tags (should appear first)
     'django_adminlte',
     # Optional: Django admin theme (must be before django.contrib.admin)
-    'django_adminlte_theme',
+    # 'django_adminlte_theme',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
