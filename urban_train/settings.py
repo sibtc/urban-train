@@ -9,18 +9,8 @@ env.read_env(ROOT_DIR('.envs/.local/.env'))
 
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='apjfqc9e8r-9eq3r3u49u4399r43-@#%^^^')
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+APPS_DIR = ROOT_DIR.path("urban-train")
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'bn8&xf8i916nuk=ma8wsi420yhmu%kly4@5i#d-ir!@&+0b+az'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
 DEBUG = env.bool('DJANGO_DEBUG', False)
 
 ALLOWED_HOSTS = [
@@ -35,6 +25,10 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    # General use templates & template tags (should appear first)
+    'django_adminlte',
+    # Optional: Django admin theme (must be before django.contrib.admin)
+    'django_adminlte_theme',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # lib
     'widget_tweaks',
+    'django_extensions',
+    'django_select2',
+    'django_ajax',
     # Third-party
     'crispy_forms',
     'cruds_adminlte',
@@ -136,8 +133,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '../static/')
+# STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, '../static/')
+
+# STATIC
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#static-root
+STATIC_ROOT = str(ROOT_DIR("staticfiles"))
+# https://docs.djangoproject.com/en/dev/ref/settings/#static-url
+STATIC_URL = "/static/"
+# https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
+STATICFILES_DIRS = [str(APPS_DIR.path("static"))]
+# https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
 
 # auth
 LOGIN_URL = '/entrar/'
