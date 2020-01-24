@@ -21,9 +21,6 @@ ALLOWED_HOSTS = [
     'gastosluxu.herokuapp.com'
 ]
 
-
-# Application definition
-
 INSTALLED_APPS = [
     # General use templates & template tags (should appear first)
     'django_adminlte',
