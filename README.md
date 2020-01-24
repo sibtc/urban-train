@@ -80,7 +80,11 @@ Criar o usuário para poder logar no app:
 
 Será criado o **user** principal do sistema
 
-Como início de sua aplicação são esses os passos iniciais.
+Como início de sua aplicação são esses os passos.
+
+![img](https://i.imgur.com/voalXAV.jpg)
+
+![img](https://i.imgur.com/jqgeU9X.jpg)
 
 Qualquer dúvida/críticas/melhorias crie uma issues no github
 ou envie pelo e-mail: *contato@luxu.com.br*
