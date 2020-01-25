@@ -32,6 +32,11 @@ class GuiaBolsoSelenium:
             # chrome_options.add_argument('--headless')
             chrome_options.add_argument("--start-maximized")
             driver = webdriver.Chrome(options=chrome_options)
+            # chrome_options = Options()
+            chrome_options.binary_location = GOOGLE_CHROME_BIN
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--no-sandbox')
+            driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
         else:
             driver = webdriver.Firefox()
             driver.set_window_size(1120, 550)
