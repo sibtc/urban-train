@@ -1,7 +1,7 @@
 from .views import (
     GastoSegmentoListView, gastosPorMesView, AutoCompleteView,
     SegmentoCRUD, GastoCRUD, HoraTrabalhadaCRUD, RabbiitCRUD,
-    CityCRUD, PecasCRUD, ComercioCRUD
+    CityCRUD, PecasCRUD, ComercioCRUD, guiaBolsoView
 )
 
 from django.urls import path, include
@@ -25,5 +25,6 @@ urlpatterns = [
     path('gasto/autocomplete/', AutoCompleteView.as_view()),
     path('gastosPorSegmento/', GastoSegmentoListView.as_view(), name="gastosPorSegmento"),
     path('gastosPorMes/', gastosPorMesView, name="gastosPorMes"),
+    path('guiaBolso/', guiaBolsoView, name="guiaBolso"),
     path('select2/', include('django_select2.urls')),
 ]

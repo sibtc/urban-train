@@ -1,0 +1,67 @@
+{% extends 'adminlte/base.html' %}
+
+{% block title %}Gastos por Comércio{% endblock %}
+
+{% load l10n %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <div class="card">
+        <h5 class="card-title">Lista de Gastos por Comércio</h5>
+        <p class="card-text">
+          Aqui está a lista de <code>gastos</code> cadastrados por <code>comércio</code>.
+        </p>
+        <div class="card-body">
+          <br />
+          {% if gastos|length > 0 %}
+            {% if success %}
+                <p>Suas informações foram alteradas com sucesso</p>
+            {% endif %}
+            <table class="table" id="tableGasto">
+              <thead class="thead-dark">
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Identificador</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Data Gasto</th>
+                <th scope="col">Comércio</th>
+                <th scope="col" class="text-center">Ações</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for gasto in gastos %}
+                <tr>
+                  <td>{{ gasto.id }}</td>
+                  <td>{{ gasto.name }}</td>
+                  <td>{{ gasto.slug }}</td>
+                  <td>{{ gasto.valor }}</td>
+                  <td>{{ gasto.datagasto|date:'d/m/Y' }}</td>
+                  <td>{{ gasto.comercio.name }}</td>
+                  <td>
+                    <a href="{% url 'website_gasto_update' pk=gasto.id %}"
+                       class="btn btn-info" alt="editar"><i class="fas fa-pen"></i>
+                    </a>
+                    <a href="{% url 'website_gasto_delete' pk=gasto.id %}"
+                      class="btn btn-outline-danger"><i class="fas fa-ban"></i>
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+          <div class="text-center mt-5 mb-5 jumbotron">
+            <h5>Nenhum <code>gasto</code> cadastrado nesse <code>comércio</code></h5>
+          </div>
+          {% endif %}
+        </div><!-- fim do div.card-body -->
+      </div><!-- fim do div.card -->
+    </div><!-- fim do div.col-lg-12 col-md-12 col-sm-12 col-xs-12 -->
+  </div><!-- fim do div.row -->
+</div><!-- fim do div.container -->
+{% load static %}
+<script src="{% static 'js/gasto.js' %}"></script>
+{% endblock content %}

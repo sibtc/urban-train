@@ -18,6 +18,7 @@ from vendor.cruds_adminlte.crud import CRUDView
 import json
 import pandas as pd
 from datetime import date
+from . import guiabolso
 
 
 # def GastoComRequest(request):
@@ -195,7 +196,7 @@ class GastoSegmentoListView(ListView):
         return context
 
 
-# RELATÓEIO DE GASTOS POR MÊS
+# RELATÓRIO DE GASTOS POR MÊS
 # ----------------------------------------------
 
 def gastosPorMesView(request):
@@ -265,6 +266,28 @@ def gastosPorMesView(request):
 
 
 
+# GUIABOLSO scripts
+# ----------------------------------------------
+
+def guiaBolsoView(request):
+    template = "website/guiabolso.html"
+    context = {}
+    # from django.conf import settings
+    # env = settings.env
+    import os
+    if request.method == 'POST':
+        gb = guiabolso.GuiaBolsoSelenium()
+        url = 'https://www.guiabolso.com.br/web/#/login'
+        params = {}
+        params['email'] = os.environ['GUIABOLSO_EMAIL']
+        params['password'] = os.environ['GUIABOLSO_PASSWORD']
+        get_data = gb.main(url, params)
+        context = {
+            'lista_dos_gastos': get_data
+        }
+        print('Tudo OK!')
+    return render(request, template, context)
+
 # CADASTRAMENTO DE GASTOS
 # ----------------------------------------------
 
@@ -295,5 +318,3 @@ class AutoCompleteView(FormView):
 
 class AutoResponseView(ListView):
     ...
-
-
