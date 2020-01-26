@@ -40,8 +40,14 @@ class GuiaBolsoSelenium:
             chrome_options.binary_location = GOOGLE_CHROME_PATH
             driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
         else:
-            driver = webdriver.Firefox()
-            driver.set_window_size(1120, 550)
+            # driver = webdriver.Firefox()
+            driver = webdriver.Chrome()
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.binary_location = GOOGLE_CHROME_PATH
+            driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+            # driver.set_window_size(1120, 550)
         # chrome_options.add_argument('--headless')
         # self.driver.set_window_size(1120, 550)
         self.wait = WebDriverWait(
