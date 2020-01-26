@@ -26,6 +26,8 @@ class GuiaBolsoSelenium:
                          'Pgto BB', 'Contr BB', 'ANUIDADE NACIONAL']
 
     def loadBrowser(self):
+        GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
+        CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
         if (os.name != 'posix'):  # Windows
             driver = webdriver.Chrome()
             chrome_options = webdriver.ChromeOptions()
@@ -33,9 +35,9 @@ class GuiaBolsoSelenium:
             chrome_options.add_argument("--start-maximized")
             driver = webdriver.Chrome(options=chrome_options)
             # chrome_options = Options()
-            chrome_options.binary_location = GOOGLE_CHROME_BIN
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--no-sandbox')
+            chrome_options.binary_location = GOOGLE_CHROME_PATH
             driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
         else:
             driver = webdriver.Firefox()
