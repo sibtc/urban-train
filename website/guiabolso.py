@@ -32,8 +32,7 @@ class GuiaBolsoSelenium:
             driver = webdriver.Chrome()
             chrome_options = webdriver.ChromeOptions()
             # chrome_options.add_argument('--headless')
-            chrome_options.add_argument("--start-maximized")
-            driver = webdriver.Chrome(options=chrome_options)
+            # chrome_options.add_argument("--start-maximized")
             # chrome_options = Options()
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--no-sandbox')
@@ -41,7 +40,7 @@ class GuiaBolsoSelenium:
             driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
         else:
             # driver = webdriver.Firefox()
-            driver = webdriver.Chrome()
+            # driver = webdriver.Chrome()
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--no-sandbox')

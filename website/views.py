@@ -282,6 +282,7 @@ def guiaBolsoView(request):
         params['email'] = os.environ['GUIABOLSO_EMAIL']
         params['password'] = os.environ['GUIABOLSO_PASSWORD']
         get_data = gb.main(url, params)
+        print(get_data)
         context = {
             'lista_dos_gastos': get_data
         }
