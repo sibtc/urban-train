@@ -44,7 +44,8 @@ class GuiaBolsoSelenium:
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--no-sandbox')
-            chrome_options.binary_location = GOOGLE_CHROME_PATH
+            chrome_exec_shim = os.environ.get("GOOGLE_CHROME_PATH", "chromedriver")
+            chrome_options.binary_location = chrome_exec_shim
             driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
             # driver.set_window_size(1120, 550)
         # chrome_options.add_argument('--headless')
