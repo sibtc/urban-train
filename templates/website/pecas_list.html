@@ -1,0 +1,84 @@
+{% extends 'adminlte/base.html' %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+{% load crud_tags %}
+
+{#{% block title %}{% if blocks.title %}{{ blocks.page_description }}{% else %}{% trans "Grid de" %} {{ model_verbose_name_plural|lower }}{% endif %}{% endblock %}#}
+{#{% block body_class %}{{ blocks.body_class|default:model_verbose_name_plural|lower }}{% endblock body_class %}#}
+{#{% block page_name %}{{ blocks.page_name|default:model_verbose_name_plural }}{% endblock %}#}
+{#{% block page_description %}{% if blocks.page_description %}{{ blocks.page_description }}{% else %}{% trans "List of" %} {{ model_verbose_name_plural|lower }}{% endif %}{% endblock %}#}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <div class="row">
+                        <div class="col-lg-6">
+                          <a href="{% url 'website_pecas_create' %}" class="btn btn-primary">
+                                  {% trans "Create new " %} </a>
+                        </div>
+                        <div class="col-lg-6">
+                            <form action="" method="get">
+                                <div class="input-group">
+                                    <input type="text" name="q" class="form-control"
+                                           value="{{q}}" placeholder="{% trans 'Search for...' %}">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-flat" type="submit">
+                                            <i class="fa fa-search"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="box">
+                <div class="box-body">
+                    <table id="datatable" class="table table-responsive table-bordered table-hover">
+                        {% if object_list %}
+                        <thead>
+                            <th>ID</th>
+                            <th>Data</th>
+                            <th>Veículo</th>
+                            <th>Próx. Troca</th>
+                            <th>Troca</th>
+                            <th>Comércio</th>
+                            <th>Cidade</th>
+                            <th>Total</th>
+                            <th style="text-align: center">{% trans "Actions" %}</th>
+                        </thead>
+                        <tbody>
+                          {% block tbody %}
+                            {% for object in object_list %}
+                                <tr>
+                                    <td>{{ object.id }}</td>
+                                    <td>{{ object.data }}</td>
+                                    <td>{{ object.veiculo }}</td>
+                                    <td>{{ object.proxtroca }}</td>
+                                    <td>{{ object.troca }}</td>
+                                    <td>{{ object.comercio.description }}</td>
+                                    <td>{{ object.city }}</td>
+                                    <td>{{ object.total }}</td>
+                                    <td>
+                                        <a href="" class="btn btn-primary">{% trans "Show" %}</a>
+                                        <a href="{% url 'website_pecas_edit' object.id %}" class="btn btn-success">{% trans "Edit" %}</a>
+                                        <a href="" class="btn btn-danger">{% trans "Delete" %}</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                          {% endblock tbody %}
+                        </tbody>
+                    {% else %}
+                      <thead><th></th></thead>
+                      <tbody><tr><td>{% trans "No items yet." %}</td></tr></tbody>
+                    {% endif %}
+                    </table>
+                    </div>
+                </div>
+            <div class="box-footer"></div>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,16 +1,5 @@
 $(function(){
     $('#id_valor').mask('000.000.000.000.000,00', {reverse: true});
-    $('#id_price').mask('000.000.000.000.000,00', {reverse: true});
-    $('#id_subtotal').blur(function() {
-        let price = $("#id_price").val();
-        let quantity =  $("#id_quantity").val();
-        price = parseFloat(price.replace(',','.'));
-        let total = price * quantity;
-        $("#id_subtotal").val(total);
-    });
-    $('#modal-dialog').on('shown.bs.modal', function () {
-        $("#id_quantity").focus();
-    });
     $('#id_name').focus();
     $('#id_name').autocomplete({
         delay: 600,

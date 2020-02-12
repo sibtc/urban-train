@@ -1,8 +1,8 @@
 # coding=utf-8
 
 from django.http import HttpResponse
-from django.views.generic import ListView, FormView
-from django.shortcuts import render
+from django.views.generic import ListView, FormView, CreateView, TemplateView, UpdateView
+from django.shortcuts import render, redirect
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from utils import change_comma_by_dot
@@ -12,7 +12,7 @@ from .models import (
 )
 from .forms import (
     SegmentoForm, GastoForm, RabbiitForm,
-    PecasForm, ComercioForm, ItensPecasForm
+    PecasForm, ComercioForm, ItensPecasForm, ItemPecasFormSet
 )
 from vendor.cruds_adminlte.crud import CRUDView
 import json
@@ -120,34 +120,77 @@ class CityCRUD(CRUDView):
 #     title = _("Itens das Peças")
 
 
-class PecasCRUD(CRUDView):
-    model = Pecas
-    template_name_base = 'ccruds'
-    namespace = None
-    check_perms = True
-    views_available = ['create', 'list', 'delete', 'update']
-    fields = ['data', 'veiculo',
-                'proxtroca', 'troca',
-                'comercio', 'city',
-                'total',
-    ]
-    list_fields = ['id', 'data', 'veiculo',
-                   'proxtroca', 'troca',
-                   'comercio', 'city',
-                   'total',
-    ]
-    # inlines = [Itenspecas_AjaxCRUD, ]
-    add_form = PecasForm
-    update_form = PecasForm
-    paginate_by = 40
+class PecasListView(TemplateView):
+    # model = Pecas
+    template_name = 'website/pecas_list.html'
 
-    # def get_context_data(self, **kwargs):
-    #     data = super(PecasCRUD, self).get_context_data(**kwargs)
-    #     if self.request.POST:
-    #         data['titles'] = CollectionTitleFormSet(self.request.POST)
-    #     else:
-    #         data['titles'] = CollectionTitleFormSet()
-    #     return data
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_list'] = Pecas.objects.order_by('id')
+        return context
+
+
+class PecasCreateView(CreateView):
+    model = Pecas
+    template_name = 'website/pecas_create.html'
+    form_class = PecasForm
+
+    def get_context_data(self, **kwargs):
+        context = super(PecasCreateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context['forms'] = PecasForm(self.request.POST)
+            context['formset'] = ItemPecasFormSet(self.request.POST)
+        else:
+            context['forms'] = PecasForm()
+            context['formset'] = ItemPecasFormSet()
+        return context
+
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context['forms']
+        formset = context['formset']
+        if forms.is_valid() and formset.is_valid():
+            self.object = form.save()
+            forms.instance = self.object
+            formset.instance = self.object
+            forms.save()
+            formset.save()
+            return redirect('pedido')
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+
+
+class PecasEditView(UpdateView):
+    model = Pecas
+    template_name = 'website/pecas_create.html'
+    form_class = PecasForm
+
+    def get_context_data(self, **kwargs):
+        context = super(PecasEditView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context['forms'] = PecasForm(self.request.POST, instance=self.object)
+            context['formset'] = ItemPecasFormSet(self.request.POST, instance=self.object)
+        else:
+            context['forms'] = PecasForm(instance=self.object)
+            context['formset'] = ItemPecasFormSet(instance=self.object)
+        return context
+
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context['forms']
+        formset = context['formset']
+        if forms.is_valid() and formset.is_valid():
+            form.cleaned_data['total'] = formset.cleaned_data[0]['subtotal']
+            self.object = form.save()
+            forms.instance = self.object
+            formset.instance = self.object
+            forms.save()
+            formset.save()
+            return redirect('website_pecas_list')
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
 
 
 class ItensPecasCRUD(CRUDView):

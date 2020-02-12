@@ -122,8 +122,8 @@ class Comercio(Base):
     def __str__(self):
         return self.description
 
-    # def __repr__(self):
-    #     return str(self.description)
+    def __repr__(self):
+        return str(self.description)
 
     class Meta:
         verbose_name = 'Comércio'
@@ -133,13 +133,13 @@ class Comercio(Base):
 
 class Pecas(Base):
 
-    data = models.DateField()
+    data = models.DateField(verbose_name=_('Data'), )
     veiculo = models.CharField(verbose_name=_('Veículo'), choices=TYPE_VEHICLE, max_length=1)
-    proxtroca = models.IntegerField(default=1)
-    troca = models.IntegerField(default=1)
-    comercio = models.ForeignKey(Comercio, verbose_name='Comércio', on_delete=models.PROTECT)
-    city = models.ForeignKey(City, verbose_name='Localidade', on_delete=models.PROTECT)
-    total = models.CharField(verbose_name='Total', blank=True, null=True, max_length=100)
+    proxtroca = models.IntegerField(verbose_name=_('Próxima Troca'), default=1)
+    troca = models.IntegerField(verbose_name=_('Troca'), default=1)
+    comercio = models.ForeignKey(Comercio, verbose_name=_('Comércio'), on_delete=models.PROTECT)
+    city = models.ForeignKey(City, verbose_name=_('Localidade'), on_delete=models.PROTECT)
+    total = models.CharField(verbose_name=_('Total'), blank=True, null=True, max_length=100)
 
     def __str__(self):
         return self.comercio.description
@@ -148,8 +148,8 @@ class Pecas(Base):
     #     return str(self.comercio.description)
 
     class Meta:
-        verbose_name = 'Peça'
-        verbose_name_plural = 'Peças'
+        verbose_name = _('Peça')
+        verbose_name_plural = _('Peças')
         ordering = ['id']
 
     # objects = DataFrameManager()
@@ -168,8 +168,8 @@ class Itenspecas(models.Model):
         return self.description
 
 
-    def __repr__(self):
-        return str(self.description)
+    # def __repr__(self):
+    #     return str(self.description)
 
 
     class Meta:
@@ -197,5 +197,4 @@ def PecasPosSave(instance, sender, created=False, **kwargs):
             pcs.total = price * qt
 
     pcs.save(update_fields=['total'])
-
 

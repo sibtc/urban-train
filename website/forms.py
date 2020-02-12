@@ -1,7 +1,7 @@
 # coding=utf-8
 from .models import (
     Segmento, Gasto, Rabbiit, HoraTrabalhada,
-    Pecas, Comercio, Itenspecas
+    Pecas, Comercio, Itenspecas, City
 )
 from django import forms
 from crispy_forms.helper import FormHelper
@@ -60,6 +60,15 @@ class ComercioCustomTitleWidget(ModelSelect2Widget):
     def label_from_instance(self, obj):
         return force_text(obj.description).upper()
 
+class LocalidadeCustomTitleWidget(ModelSelect2Widget):
+    model = City
+    search_fields = [
+        'description__icontains'
+    ]
+
+    def label_from_instance(self, obj):
+        return force_text(obj.description).upper()
+
 
 class GastoForm(forms.ModelForm):
 
@@ -72,7 +81,6 @@ class GastoForm(forms.ModelForm):
             # 'name': GastoCustomTitleWidget,
             'segmento': SegmentoCustomTitleWidget,
         }
-
 
     def __init__(self, *args, **kwargs):
         super(GastoForm, self).__init__(*args, **kwargs)
@@ -111,7 +119,7 @@ class SegmentoForm(forms.ModelForm):
                 Column('slug', css_class='form-group col-md-6 mb-0'),
                 css_class='form-row'
             ),
-            Submit('submit', ('Enviar'),),
+            Submit('submit', _('Submit'),),
         )
 
     class Meta(BaseMeta):
@@ -197,6 +205,8 @@ class HoraTrabalhadaForm(forms.ModelForm):
 
 class PecasForm(forms.ModelForm):
 
+    # total = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+
     def __init__(self, *args, **kwargs):
         super(PecasForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
@@ -204,37 +214,34 @@ class PecasForm(forms.ModelForm):
         self.fields['data'].localize = True
         self.fields['data'].widget = MyDateInput()
 
-
         self.helper.layout = Layout(
-            Div(
-                Field('data', wrapper_class="col-md-6"),
-                Field('veiculo', wrapper_class="col-md-6"),
-                Field('proxtroca', wrapper_class="col-md-6"),
-                Field('troca', wrapper_class="col-md-6"),
-                Field('comercio', wrapper_class="col-md-12"),
-                Field('city', wrapper_class="col-md-6"),
-                Field('total', wrapper_class="col-md-6"),
+            Row(
+                Column('data', css_class='form-group col-md-3 mb-0'),
+                Column('veiculo', css_class='form-group col-md-3 mb-0'),
+                Column('proxtroca', css_class='form-group col-md-3 mb-0'),
+                Column('troca', css_class='form-group col-md-3 mb-0'),
+                css_class='form-row'
             ),
             Div(
-                FormActions(
-                    Submit('submit', _('Submit'), css_class='btn btn-primary'),
-                    HTML("""{% load i18n %}
-                                {% if url_delete %}
-                                <a class="btn btn-danger"
-                                  href="{{ url_delete }}">{% trans 'Delete' %}</a>
-                                {% endif %}  
-                                  """),
-                    css_class="col-md-12"
-                )
+                Field('comercio', wrapper_class="col-md-12"),
+            ),
+            Row(
+                Column('city', css_class='form-group col-md-6 mb-0'),
+                Column('total', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
             )
         )
 
     class Meta(BaseMeta):
         model = Pecas
-        widgets = { 'comercio': ComercioCustomTitleWidget, }
+        widgets = {'comercio': ComercioCustomTitleWidget,
+                   'city': LocalidadeCustomTitleWidget,
+        }
 
 
 class ItensPecasForm(forms.ModelForm):
+
+    subtotal = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
 
     def __init__(self, *args, **kwargs):
         super(ItensPecasForm, self).__init__(*args, **kwargs)
@@ -243,11 +250,10 @@ class ItensPecasForm(forms.ModelForm):
 
         self.helper.layout = Layout(
             Div(
-                Field('description', wrapper_class="col-md-6"),
-                Field('pecas', wrapper_class="col-md-12"),
-                Field('price', wrapper_class="col-md-4"),
-                Field('quantity', wrapper_class="col-md-4"),
-                Field('subtotal', wrapper_class="col-md-4"),
+                Field('description', wrapper_class="col-md-3"),
+                Field('price', wrapper_class="col-md-3"),
+                Field('quantity', wrapper_class="col-md-3"),
+                Field('subtotal', wrapper_class="col-md-3"),
             ),
             Div(
                 FormActions(
@@ -255,10 +261,10 @@ class ItensPecasForm(forms.ModelForm):
                     HTML("""{% load i18n %}
                                 {% if url_delete %}
                                 <a class="btn btn-danger"
-                                  href="{{ url_delete }}">{% trans 'Delete' %}</a>
+                                  href="{{ url_delete }}">{% trans 'Excluir' %}</a>
                                 {% endif %}  
                                   """),
-                    css_class="col-md-12"
+                    css_class="col-md-3"
                 )
             )
         )
@@ -266,6 +272,10 @@ class ItensPecasForm(forms.ModelForm):
     class Meta(BaseMeta):
         model = Itenspecas
 
+ItemPecasFormSet = inlineformset_factory(
+    Pecas, Itenspecas, form=ItensPecasForm,
+    extra=0, can_delete=True
+)
 
 class ComercioForm(forms.ModelForm):
 

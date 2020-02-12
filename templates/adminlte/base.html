@@ -1,5 +1,6 @@
-{% load static %}<!DOCTYPE html>
-<html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
     {% block title_outer %}
         <title>{% block title %}{{ site.name }}{% endblock %}</title>
@@ -70,6 +71,7 @@
         {% endblock %}
 
     </div>
+</body>
 {% endblock body %}
 
 {% block javascript %}
@@ -77,5 +79,4 @@
 {% endblock %}
 
 {% block extra_foot %}{% endblock %}
-</body>
 </html>

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django_ajax',
     # Third-party
     'crispy_forms',
+    'dynamic_formsets',
     'cruds_adminlte',
     # apps
     # 'core',
