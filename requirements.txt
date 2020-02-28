@@ -3,6 +3,7 @@ Django==2.2.7
 django_adminlte==1.2
 django-crispy-forms==1.8.1
 django-cruds-adminlte==0.0.16
+django-dynamic-formsets==0.0.8
 django-debug-toolbar==2.1
 django-environ==0.4.5
 django-extensions==2.2.1
