@@ -41,11 +41,11 @@ class GastoCustomTitleWidget(ModelSelect2Widget):
     def label_from_instance(self, obj):
         return force_text(obj.name).upper()
 
-class SegmentoCustomTitleWidget(ModelSelect2Widget):
-    model = Segmento
-    search_fields = [
-        'name__icontains'
-    ]
+# class SegmentoCustomTitleWidget(ModelSelect2Widget):
+#     model = Segmento
+#     search_fields = [
+#         'name__icontains'
+#     ]
 
     def label_from_instance(self, obj):
         return force_text(obj.name).upper()
@@ -61,7 +61,7 @@ class ComercioCustomTitleWidget(ModelSelect2Widget):
         return force_text(obj.description).upper()
 
 class LocalidadeCustomTitleWidget(ModelSelect2Widget):
-    model = City
+    # model = City
     search_fields = [
         'description__icontains'
     ]
@@ -76,11 +76,11 @@ class GastoForm(forms.ModelForm):
 
     class Meta(BaseMeta):
         model = Gasto
-        fields = ['name', 'slug', 'valor', 'datagasto', 'segmento', 'parcelas']
-        widgets = {
-            # 'name': GastoCustomTitleWidget,
-            'segmento': SegmentoCustomTitleWidget,
-        }
+        # fields = ['name', 'slug', 'valor', 'datagasto', 'segmento', 'parcelas']
+        # widgets = {
+        #     # 'name': GastoCustomTitleWidget,
+        #     'segmento': SegmentoCustomTitleWidget,
+        # }
 
     def __init__(self, *args, **kwargs):
         super(GastoForm, self).__init__(*args, **kwargs)
@@ -92,7 +92,7 @@ class GastoForm(forms.ModelForm):
                 Column('valor', css_class='form-group col-md-6 mb-0'),
                 Column('datagasto', css_class='form-group col-md-6 mb-0'),
                 Column('segmento', css_class='form-group col-md-6 mb-0'),
-                Column('parcelas', css_class='form-group col-md-6 mb-0'),
+                Column('parcelas', css_class='form-group col-md-6 mb-0')
             ),
             Div(
                 FormActions(
@@ -205,8 +205,6 @@ class HoraTrabalhadaForm(forms.ModelForm):
 
 class PecasForm(forms.ModelForm):
 
-    # total = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-
     def __init__(self, *args, **kwargs):
         super(PecasForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
@@ -222,8 +220,9 @@ class PecasForm(forms.ModelForm):
                 Column('troca', css_class='form-group col-md-3 mb-0'),
                 css_class='form-row'
             ),
-            Div(
-                Field('comercio', wrapper_class="col-md-12"),
+            Row(
+                Column('comercio', css_class="col-md-12"),
+                css_class='form-row'
             ),
             Row(
                 Column('city', css_class='form-group col-md-6 mb-0'),
@@ -234,14 +233,11 @@ class PecasForm(forms.ModelForm):
 
     class Meta(BaseMeta):
         model = Pecas
-        widgets = {'comercio': ComercioCustomTitleWidget,
-                   'city': LocalidadeCustomTitleWidget,
-        }
 
 
 class ItensPecasForm(forms.ModelForm):
 
-    subtotal = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    # subtotal = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
 
     def __init__(self, *args, **kwargs):
         super(ItensPecasForm, self).__init__(*args, **kwargs)

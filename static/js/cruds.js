@@ -1,6 +1,6 @@
 $(function(){
     $('#id_valor').mask('000.000.000.000.000,00', {reverse: true});
-    $('#id_name').focus();
+    $('#id_segmento').select2();
     $('#id_name').autocomplete({
         delay: 600,
         minLength: 2,

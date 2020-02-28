@@ -1,4 +1,4 @@
-{% extends 'adminlte/base.html' %}
+{% extends '_base.html' %}
 {% load crispy_forms_tags %}
 {% block head_title %}{{ template_title }}{% endblock %}
 {% load i18n %}
@@ -24,7 +24,7 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <legend style="text-align: center" >Itens</legend>
-            <div id="peca" class="form-inline form-group">
+            <div id="itens-peca" class="form-inline form-group">
                 {% for item_peca_form in formset %}
                     <div id="item-{{ forloop.counter0 }}">
                         {{ item_peca_form|crispy }}
@@ -43,7 +43,8 @@
 {% block javascript %}
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
-    <script src="{% static "js/cruds.js" %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+{#    <script src="{% static "js/cruds.js" %}"></script>#}
     <script src="{% static "js/jquery.mask.min.js" %}"></script>
     <script src="{% static 'js/pecas.js' %}"></script>
     <script type="text/html" id="item-peca">

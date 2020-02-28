@@ -156,7 +156,7 @@ class PecasCreateView(CreateView):
             formset.instance = self.object
             forms.save()
             formset.save()
-            return redirect('pedido')
+            return redirect('website_pecas_list')
         else:
             return self.render_to_response(self.get_context_data(form=form))
 
@@ -179,14 +179,24 @@ class PecasEditView(UpdateView):
 
     def form_valid(self, form):
         context = self.get_context_data()
-        forms = context['forms']
+        form = context['forms']
         formset = context['formset']
-        if forms.is_valid() and formset.is_valid():
-            form.cleaned_data['total'] = formset.cleaned_data[0]['subtotal']
-            self.object = form.save()
-            forms.instance = self.object
-            formset.instance = self.object
-            forms.save()
+        if form.is_valid() and formset.is_valid():
+            sizeIensPecas = len(formset.cleaned_data)
+            total = 0.00
+            for chave in range(sizeIensPecas):
+                try:
+                    total += float(formset.cleaned_data[chave]['subtotal'])
+                except:
+                    ...
+            try:
+                form.cleaned_data['total'] = str(total)
+            except Exception as err:
+                form.cleaned_data['total'] = 0
+                print(f'Err.: {err}')
+            # form = form.save(commit=False)
+            # form.total = str(total)
+            form.save()
             formset.save()
             return redirect('website_pecas_list')
         else:
