@@ -1,10 +1,11 @@
 # coding=utf-8
-
+from django.db.models import Q
 from django.http import HttpResponse
 from django.views.generic import ListView, FormView, CreateView, TemplateView, UpdateView
 from django.shortcuts import render, redirect
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from utils import change_comma_by_dot
 from .models import (
     Segmento, Gasto, Rabbiit, HoraTrabalhada, City,
@@ -69,7 +70,6 @@ class SegmentoCRUD(CRUDView):
     list_fields = ['name',]
     search_fields = ['name__icontains']
     split_space_search = ' ' # default False
-
     add_form = SegmentoForm
     update_form = SegmentoForm
 
@@ -86,7 +86,6 @@ class RabbiitCRUD(CRUDView):
         'rate_total',
     ]
     search_fields = ['description__icontains']
-
     add_form = RabbiitForm
     update_form = RabbiitForm
 
@@ -111,22 +110,55 @@ class CityCRUD(CRUDView):
     list_fields = ['id', 'description', ]
 
 
-# class Itenspecas_AjaxCRUD(InlineAjaxCRUD):
-#     model = Itenspecas
-#     base_model = Pecas
-#     inline_field = 'pecas'
-#     list_fields = ['description', 'price', 'quantity', 'subtotal', ]
-#     fields = ('description', 'price', 'quantity', 'subtotal')
-#     title = _("Itens das Peças")
-
-
 class PecasListView(TemplateView):
-    # model = Pecas
+    model = Pecas
     template_name = 'website/pecas_list.html'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset_list = Pecas.objects.all()
+        query = self.request.GET.get("q")
+        if query:
+            queryset_list = queryset_list.filter(
+                Q(comercio__icontains=query) |
+                Q(data__icontains=query)
+            ).distinct()
+
+        paginator = Paginator(queryset_list, 5)  # Show 5 pecas per page
+        page = self.request.GET.get('page')
+        try:
+            queryset_list = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            queryset_list = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 999), deliver last page of results.
+            queryset_list = paginator.page(paginator.num_pages)
+
+        return queryset_list
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['object_list'] = Pecas.objects.order_by('id')
+        list_pecas = Pecas.objects.order_by('-id')
+        # queryset_list = Pecas.objects.all()
+        query = self.request.GET.get("q")
+        if query:
+            list_pecas = list_pecas.filter(
+                Q(comercio__description__icontains=query) |
+                Q(data__icontains=query)
+            ).distinct()
+        paginator = Paginator(list_pecas, self.paginate_by)
+
+        page = self.request.GET.get('page')
+
+        try:
+            object_list = paginator.page(page)
+        except PageNotAnInteger:
+            object_list = paginator.page(1)
+        except EmptyPage:
+            object_list = paginator.page(paginator.num_pages)
+        context['object_list'] = object_list
+        # context['object_list'] = Pecas.objects.order_by('-id')
         return context
 
 
@@ -144,7 +176,6 @@ class PecasCreateView(CreateView):
             context['forms'] = PecasForm()
             context['formset'] = ItemPecasFormSet()
         return context
-
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -175,7 +206,6 @@ class PecasEditView(UpdateView):
             context['forms'] = PecasForm(instance=self.object)
             context['formset'] = ItemPecasFormSet(instance=self.object)
         return context
-
 
     def form_valid(self, form):
         context = self.get_context_data()
