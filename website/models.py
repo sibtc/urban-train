@@ -38,7 +38,9 @@ class Gasto(Base):
     name = models.CharField(max_length=100, verbose_name=("nome"))
     slug = models.SlugField('Identificador', max_length=100)
     parcelas = models.IntegerField(default=1)
-    valor = models.CharField(max_length=100)
+    nro_da_parcela = models.IntegerField('Parcela nro', default=1)
+    valor = models.CharField('Valor Total', max_length=100)
+    valor_da_parcela = models.CharField('Valor Parcela', max_length=100, blank=True, null=True)
     datagasto = models.DateField()
     segmento = models.ForeignKey(Segmento, on_delete=models.PROTECT)
 
@@ -57,7 +59,7 @@ class Gasto(Base):
 
 
 class HoraTrabalhada(Base):
-    price = models.CharField(max_length=100, verbose_name='Ganho/hora', default=0)
+    price = models.CharField(verbose_name='Ganho/hora', max_length=100, default=0)
 
     def __str__(self):
         return self.price
@@ -167,34 +169,7 @@ class Itenspecas(models.Model):
     def __str__(self):
         return self.description
 
-
-    # def __repr__(self):
-    #     return str(self.description)
-
-
     class Meta:
         verbose_name = 'Item Peça'
         verbose_name_plural = 'Itens Peças'
         ordering = ['-id']
-
-
-@receiver(post_save, sender=Itenspecas)
-def PecasPosSave(instance, sender, created=False, **kwargs):
-    pecas = Pecas.objects.filter(id=instance.pecas_id)
-    price = float(change_comma_by_dot(instance.price))
-    qt = instance.quantity
-    try:
-        total = float(list(pecas)[0].total)
-    except:
-        total = 0.00
-    pcs = Pecas()
-    pcs.id = instance.pecas_id
-    if created:
-        try:
-            pcs.total = price * qt + total
-        except Exception as err:
-            print(err)
-            pcs.total = price * qt
-
-    pcs.save(update_fields=['total'])
-

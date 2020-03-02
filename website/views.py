@@ -44,21 +44,31 @@ class GastoCRUD(CRUDView):
     namespace = None
     check_perms = True
     views_available = ['create', 'list', 'delete', 'update']
-    fields = ['name', 'slug', 'valor', 'parcelas', 'datagasto',]
-    list_fields = ('name', 'valor', 'parcelas', 'datagasto', 'segmento',)
+    fields = ['name', 'slug', 'valor', 'nro_da_parcela', 'valor_da_parcela', 'parcelas', 'datagasto',]
+    list_fields = ('name', 'parcelas', 'nro_da_parcela', 'valor_da_parcela', 'valor', 'datagasto', 'segmento',)
     search_fields = ('name__icontains',)
-    paginate_by = 5
+    paginate_by = 10
     paginate_template = 'cruds/pagination/prev_next.html'
 
     add_form = GastoForm
     update_form = GastoForm
 
+
 @receiver(post_save, sender=Gasto)
 def _order_post_save(sender, instance, created, **kwargs):
-    # queue = django_rq.get_queue('default')
-    context = {'object': instance}
-    print(context)
-    # context = get_order_description(context)
+    if created:
+        cont_parcelas = instance.parcelas - 1
+        while cont_parcelas > 1:
+            gasto = Gasto()
+            gasto.name = instance.name
+            gasto.slug = instance.slug
+            gasto.valor = instance.valor
+            gasto.datagasto = instance.datagasto
+            gasto.segmento = instance.segmento
+            gasto.parcelas = cont_parcelas
+            gasto.save()
+            cont_parcelas -= 1
+
 
 
 class SegmentoCRUD(CRUDView):

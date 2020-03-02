@@ -1,5 +1,6 @@
 $(function(){
     $('#id_valor').mask('000.000.000.000.000,00', {reverse: true});
+    $('#id_valor_da_parcela').mask('000.000.000.000.000,00', {reverse: true});
     $('#id_segmento').select2();
     $('#id_name').autocomplete({
         delay: 600,

@@ -11,8 +11,11 @@ VALOR_MONETARIO = re.compile(r'(\d+)[\.\,]{1}(\d{2})')
 Função que troca a vírgula por ponto para fazer operações de calcular,
 pois os campos VALOR são todos do tipo CHARFIELD
 """
+
+
 def change_comma_by_dot(number):
     return number.replace(",", ".")
+
 
 def random_string(size=250):
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(size))

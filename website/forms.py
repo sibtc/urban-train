@@ -86,13 +86,23 @@ class GastoForm(forms.ModelForm):
         super(GastoForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
-            'name',
-            'slug',
+            Row(
+                Column('name', css_class='form-group col-md-6 mb-0'),
+            ),
+            Row(
+                Column('slug', css_class='form-group col-md-6 mb-0'),
+            ),
+            Row(
+                Column('parcelas', css_class='form-group col-md-6 mb-0'),
+                Column('nro_da_parcela', css_class='form-group col-md-6 mb-0'),
+            ),
             Row(
                 Column('valor', css_class='form-group col-md-6 mb-0'),
+                Column('valor_da_parcela', css_class='form-group col-md-6 mb-0')
+            ),
+            Row(
                 Column('datagasto', css_class='form-group col-md-6 mb-0'),
-                Column('segmento', css_class='form-group col-md-6 mb-0'),
-                Column('parcelas', css_class='form-group col-md-6 mb-0')
+                Column('segmento', css_class='form-group col-md-6 mb-0')
             ),
             Div(
                 FormActions(
