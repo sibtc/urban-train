@@ -18,7 +18,7 @@ from .forms import (
 from vendor.cruds_adminlte.crud import CRUDView
 import json
 import pandas as pd
-from datetime import date
+from datetime import date, timedelta, datetime
 from . import guiabolso
 
 
@@ -57,18 +57,26 @@ class GastoCRUD(CRUDView):
 @receiver(post_save, sender=Gasto)
 def _order_post_save(sender, instance, created, **kwargs):
     if created:
-        cont_parcelas = instance.parcelas - 1
-        while cont_parcelas > 1:
+        # cont_parcelas = 2
+        for cont_parcelas in range(2, instance.parcelas):
+        # while instance.parcelas > 1:
+            day = 30 * cont_parcelas - 30
             gasto = Gasto()
             gasto.name = instance.name
             gasto.slug = instance.slug
             gasto.valor = instance.valor
-            gasto.datagasto = instance.datagasto
+            gasto.datagasto = instance.datagasto + timedelta(days=day)
             gasto.segmento = instance.segmento
             gasto.parcelas = cont_parcelas
             gasto.save()
-            cont_parcelas -= 1
-
+            cont_parcelas += 1
+    # if not created:
+        # gasto = Gasto.objects.get(id=instance.id)
+        # day = 30 * instance.nro_da_parcela
+        # datagasto = instance.datagasto + timedelta(days=day)
+        # Gasto.objects.filter(id=instance.id).update(datagasto=datagasto)
+        # gasto.segmento = instance.segmento
+        # gasto.save()
 
 
 class SegmentoCRUD(CRUDView):

@@ -30,6 +30,14 @@ $(function(){
         var value = $('#id_name').val();
         $('#id_slug').val(sanitizeTitle(value))
     });
+    $(document).on('focusout', '#id_valor', function() {
+        let parcelas = $('#id_parcelas').val()
+        if (parcelas == 1){
+             $('#id_valor_da_parcela').val($('#id_valor').val())
+        }
+    });
+
+
     function sanitizeTitle(title) {
         var slug = "";
         // Change to lower case

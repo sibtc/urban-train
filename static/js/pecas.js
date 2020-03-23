@@ -36,4 +36,3 @@ $(document).on('focusout', '.clQuantity', function() {
   let calculate = price.replace(',','.') * quantity;
   $('#'+chance_to_subtotal).val(calculate);
 });
-
