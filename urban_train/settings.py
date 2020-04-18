@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_select2',
     'django_ajax',
+    "django_summernote",
     # Third-party
     'crispy_forms',
     'dynamic_formsets',
@@ -144,8 +145,8 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/django-summernote/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -170,5 +171,16 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "",
+    }
+}
+
+# MEDIA_URL = "/django-summernote/"
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+SUMMERNOTE_CONFIG = {
+    'summernote': {
+        # As an example, using Summernote Air-mode
+        'airMode': False,
+        'lang': 'pt-BR',
     }
 }

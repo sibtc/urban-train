@@ -17,6 +17,7 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from django.forms.models import inlineformset_factory
 
+from django_summernote.widgets import SummernoteWidget
 
 class MyDateInput(forms.DateInput):
     input_type = 'date'
@@ -196,21 +197,35 @@ class RabbiitForm(forms.ModelForm):
 
 
 class HoraTrabalhadaForm(forms.ModelForm):
+    content = forms.CharField(
+        label='Conteúdo',
+        widget=SummernoteWidget(
+            attrs={'summernote': {'width': '100%', 'height': '400px'}}
+        )
+    )
+
+    class Meta:
+        model = HoraTrabalhada
+        # fields = [
+        #     'title',
+        #     'content',
+        #     'cover_image',
+        #     'tags',
+        #     'published',
+        #     # 'changed_at',
+        # ]
+        # fields = '__all__'
+        exclude = ['status']
 
     def __init__(self, *args, **kwargs):
-        super(HoraTrabalhadaForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_tag = False
-
-        self.helper.layout = Layout(
-            'price',
-            'created_at',
-            'modified_at',
-            Submit('submit', ('Enviar'),),
-        )
-
-    class Meta(BaseMeta):
-        model = HoraTrabalhada
+        super().__init__(*args, **kwargs)
+        # self.fields['title'].widget.attrs['class'] = 'uk-input uk-border-rounded'
+        # self.fields['content'].widget.attrs['class'] = 'uk-input uk-border-rounded'
+        # self.fields['cover_image'].widget.attrs['class'] = 'uk-input uk-border-rounded'
+        # self.fields['tags'].widget.attrs['class'] = 'django-select2'
+        # self.fields['tags'].widget.attrs['style'] = 'width: 100%'
+        # self.fields['tags'].required = False
+        # self.fields['published'].widget.attrs['class'] = 'uk-checkbox uk-input uk-border-rounded'
 
 
 class PecasForm(forms.ModelForm):

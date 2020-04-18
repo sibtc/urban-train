@@ -1,10 +1,11 @@
 # coding=utf-8
 from django.db.models import Q
 from django.http import HttpResponse
-from django.views.generic import ListView, FormView, CreateView, TemplateView, UpdateView
+from django.views.generic import ListView, FormView, CreateView, TemplateView, UpdateView, DeleteView
 from django.shortcuts import render, redirect
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from utils import change_comma_by_dot
 from .models import (
@@ -13,7 +14,8 @@ from .models import (
 )
 from .forms import (
     SegmentoForm, GastoForm, RabbiitForm,
-    PecasForm, ComercioForm, ItensPecasForm, ItemPecasFormSet
+    PecasForm, ComercioForm, ItensPecasForm, ItemPecasFormSet,
+    HoraTrabalhadaForm
 )
 from vendor.cruds_adminlte.crud import CRUDView
 import json
@@ -56,10 +58,10 @@ class GastoCRUD(CRUDView):
 
 @receiver(post_save, sender=Gasto)
 def _order_post_save(sender, instance, created, **kwargs):
+    cont_parcelas = 2
     if created:
-        # cont_parcelas = 2
-        for cont_parcelas in range(2, instance.parcelas):
-        # while instance.parcelas > 1:
+        # for cont_parcelas in range(2, instance.parcelas):
+        while instance.parcelas > cont_parcelas:
             day = 30 * cont_parcelas - 30
             gasto = Gasto()
             gasto.name = instance.name
@@ -67,9 +69,10 @@ def _order_post_save(sender, instance, created, **kwargs):
             gasto.valor = instance.valor
             gasto.datagasto = instance.datagasto + timedelta(days=day)
             gasto.segmento = instance.segmento
-            gasto.parcelas = cont_parcelas
-            gasto.save()
+            gasto.nro_da_parcela = cont_parcelas
+            gasto.parcelas = instance.parcelas
             cont_parcelas += 1
+            gasto.save()
     # if not created:
         # gasto = Gasto.objects.get(id=instance.id)
         # day = 30 * instance.nro_da_parcela
@@ -108,14 +111,136 @@ class RabbiitCRUD(CRUDView):
     update_form = RabbiitForm
 
 
-class HoraTrabalhadaCRUD(CRUDView):
+class HoraTrabalhadaListView(TemplateView):
     model = HoraTrabalhada
-    template_name_base = 'ccruds'
-    namespace = None
-    check_perms = True
-    views_available = ['create', 'list', 'delete', 'update']
-    fields = ['id', 'price', ]
-    list_fields = ['id', 'price', ]
+    template_name = 'website/horatrabalhada/horatrabalhada_list.html'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset_list = HoraTrabalhada.objects.all()
+        query = self.request.GET.get("q")
+        if query:
+            queryset_list = queryset_list.filter(
+                Q(comercio__icontains=query) |
+                Q(data__icontains=query)
+            ).distinct()
+
+        paginator = Paginator(queryset_list, 5)  # Show 5 pecas per page
+        page = self.request.GET.get('page')
+        try:
+            queryset_list = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            queryset_list = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 999), deliver last page of results.
+            queryset_list = paginator.page(paginator.num_pages)
+
+        return queryset_list
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        list_pecas = HoraTrabalhada.objects.order_by('-id')
+        # queryset_list = Pecas.objects.all()
+        query = self.request.GET.get("q")
+        if query:
+            list_pecas = list_pecas.filter(
+                Q(comercio__description__icontains=query) |
+                Q(data__icontains=query)
+            ).distinct()
+        paginator = Paginator(list_pecas, self.paginate_by)
+
+        page = self.request.GET.get('page')
+
+        try:
+            object_list = paginator.page(page)
+        except PageNotAnInteger:
+            object_list = paginator.page(1)
+        except EmptyPage:
+            object_list = paginator.page(paginator.num_pages)
+        context['object_list'] = object_list
+        return context
+
+
+class HoraTrabalhadaCreateView(CreateView):
+    model = HoraTrabalhada
+    template_name = 'website/horatrabalhada/horatrabalhada_form.html'
+    form_class = HoraTrabalhadaForm
+
+    def get_context_data(self, **kwargs):
+        context = super(HoraTrabalhadaCreateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context['forms'] = HoraTrabalhadaForm(self.request.POST)
+        else:
+            context['forms'] = HoraTrabalhadaForm()
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context['forms']
+        if forms.is_valid():
+            self.object = form.save()
+            forms.instance = self.object
+            forms.save()
+            return redirect('website_horatrabalhada_list')
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+
+
+class HoraTrabalhadaEditView(UpdateView):
+    model = HoraTrabalhada
+    template_name = 'website/horatrabalhada/horatrabalhada_form.html'
+    form_class = HoraTrabalhadaForm
+
+
+    def get_context_data(self, **kwargs):
+        context = super(HoraTrabalhadaEditView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context['forms'] = HoraTrabalhadaForm(self.request.POST, instance=self.object)
+        else:
+            context['forms'] = HoraTrabalhadaForm(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+    #     context = self.get_context_data()
+    #     form = context['forms']
+    #     formset = context['formset']
+    #     if form.is_valid():
+    #         sizeIensPecas = len(formset.cleaned_data)
+    #         try:
+    #             form.cleaned_data['total'] = str(total)
+    #         except Exception as err:
+    #             form.cleaned_data['total'] = 0
+    #             print(f'Err.: {err}')
+    #         # form = form.save(commit=False)
+    #         # form.total = str(total)
+    #         form.save()
+    #         formset.save()
+        return redirect('website_horatrabalhada_list')
+    #     else:
+    #         return self.render_to_response(self.get_context_data(form=form))
+
+
+# class CabeloDeleteView(CRUDDeleteView):
+#     model = Cabelo
+#     success_url = "/equipe/cabelo/"
+
+class HoraTrabalhadaDeleteView(DeleteView):
+    success_url = reverse_lazy("website_horatrabalhada_list")
+    model = HoraTrabalhada
+    template_name_suffix = '/horatrabalhada_confirm_delete'
+
+
+    # def get(self, request, *args, **kwargs):
+    #     try:
+    #         self.get_queryset().get(id=kwargs['pk']).delete()
+    #     except Exception as err:
+    #         print(err)
+    #     return self.post(request, *args, **kwargs)
+    #
+    # def get_queryset(self):
+    #     return HoraTrabalhada.objects.filter(id=self.kwargs['pk'])
+
 
 
 class CityCRUD(CRUDView):

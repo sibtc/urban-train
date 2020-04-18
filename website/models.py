@@ -60,6 +60,7 @@ class Gasto(Base):
 
 class HoraTrabalhada(Base):
     price = models.CharField(verbose_name='Ganho/hora', max_length=100, default=0)
+    content = models.TextField(null=True)
 
     def __str__(self):
         return self.price
@@ -145,9 +146,6 @@ class Pecas(Base):
 
     def __str__(self):
         return self.comercio.description
-
-    # def __repr__(self):
-    #     return str(self.comercio.description)
 
     class Meta:
         verbose_name = _('Peça')

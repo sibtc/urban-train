@@ -7,6 +7,8 @@
 {% block page_description %}{% if blocks.page_description %}{{ blocks.page_description }}{% else %}{% trans "Create" %} {{ model_verbose_name_plural|lower }}{% endif %}{% endblock %}
 
 {% block content %}
+
+    {{ form.media }}
 <div class="row">
     <div class="col-md-8 col-md-offset-2">
         {% if crud_perms.list %}
