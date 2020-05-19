@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_select2',
     'django_ajax',
-    "django_summernote",
+    # "django_summernote",
     # Third-party
     'crispy_forms',
     'dynamic_formsets',
