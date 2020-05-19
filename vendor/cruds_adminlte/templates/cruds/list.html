@@ -12,67 +12,37 @@
     <div class="row">
         <div class="col-xs-12">
             <div class="box">
-
                 <div class="box-header">
-                  <div class="row">
-                    {% if url_create %}
-                    <div class="col-lg-6">
-                        {% crud_url object "create" namespace as url %}
-                        {% if url and 'create' in views_available and crud_perms.create %}
-                          <a href="{{ url }}{{getparams}}" class="btn btn-primary">
-                              {% trans "Create new " %} {{ model_verbose_name|lower }}</a>
-                          {%endif%}
-                    </div>
-                    {% endif %}
-                    {% if search %}
-                    <div class="col-lg-6">
-                        <form action="" method="get">
-                            <div class="input-group">
-                                <input type="text" name="q" value="{{q}}" class="form-control" placeholder="{% trans 'Search for...' %}">
-                                <span class="input-group-btn">
-                                    <button class="btn btn-flat" type="submit">
-                                        <i class="fa fa-search"></i>
-                                    </button>
-                                </span>
+                    <div class="row">
+                        {% if url_create %}
+                            <div class="col-lg-6">
+                                {% crud_url object "create" namespace as url %}
+                                {% if url and 'create' in views_available and crud_perms.create %}
+                                  <a href="{{ url }}{{getparams}}" class="btn btn-primary">
+                                      {% trans "Create new " %} {{ model_verbose_name|lower }}</a>
+                                  {%endif%}
                             </div>
-                        </form>
+                        {% endif %}
+                        {% if search %}
+                            <div class="col-lg-6">
+                                <form action="" method="get">
+                                    <div class="input-group">
+                                        <input type="text" name="q" value="{{q}}" class="form-control" placeholder="{% trans 'Search for...' %}">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-flat" type="submit">
+                                                <i class="fa fa-search"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
                 </div>
-
-                {% if filters %}
-                <br />
-
-                <div class="box box-warning collapsed-box">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">{% trans 'Filters' %}</h3>
-                        <div class="box-tools pull-right">
-                            <button data-widget="collapse" class="btn btn-box-tool btn-success" type="button">
-                                <i class="fa fa-plus"></i>
-                            </button>
-                        </div>
-                        <!-- /.box-tools -->
-                    </div>
-                    <!-- /.box-header -->
-                    <div class="box-body" style="">
-                        <form action="" method="get">
-                            <table class="table">
-                                {% for filter in filters %}
-                                {{filter.render }}
-                                {% endfor %}
-                    </div></div>
-
-                            </table>
-                            <input type="submit" class="btn btn-info" value="{% trans 'Filter' %}" />
-                            <a  class="btn btn-warning" href="?"> {% trans 'Clean filter' %} </a>
-                        </form>
-                </div>
-                <!-- /.box-body -->
-            </div>
-                    {% endif%}
-
-                  <div class="box-body">
-                    <table id="datatable" class="table table-bordered table-hover">
+            </div><!-- /.box-body -->
+            <div class="box-body">
+                <h1>kiavelle</h1>
+                <table id="datatable" class="table table-bordered table-hover">
                 <div class="box-body">
                 {% if paginate_position == 'Up' or paginate_position == 'Both' %}
                     {% include paginate_template %}

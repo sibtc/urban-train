@@ -1,6 +1,4 @@
 $(function(){
-    $('#id_valor').mask('000.000.000.000.000,00', {reverse: true});
-    $('#id_valor_da_parcela').mask('000.000.000.000.000,00', {reverse: true});
     $('#id_segmento').select2();
     $('#id_name').autocomplete({
         delay: 600,
@@ -28,15 +26,8 @@ $(function(){
     });
     $('#id_name').focusout(function () {
         var value = $('#id_name').val();
-        $('#id_slug').val(sanitizeTitle(value))
+        $('#id_slug').val(sanitizeTitle(value));
     });
-    $(document).on('focusout', '#id_valor', function() {
-        let parcelas = $('#id_parcelas').val()
-        if (parcelas == 1){
-             $('#id_valor_da_parcela').val($('#id_valor').val())
-        }
-    });
-
 
     function sanitizeTitle(title) {
         var slug = "";
@@ -112,8 +103,6 @@ $(function(){
         $('#id_time_end').val(novaHora);
         $('#id_time_total').val(data_conometrada);
     }
-
-
     function somaHora(hrA, hrB, zerarHora) {
         if(hrA.length != 8 || hrB.length != 8) return "00:00:00";
 

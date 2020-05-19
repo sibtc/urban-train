@@ -37,10 +37,10 @@ class Gasto(Base):
 
     name = models.CharField(max_length=100, verbose_name=("nome"))
     slug = models.SlugField('Identificador', max_length=100)
-    parcelas = models.IntegerField(default=1)
-    nro_da_parcela = models.IntegerField('Parcela nro', default=1)
-    valor = models.CharField('Valor Total', max_length=100)
-    valor_da_parcela = models.CharField('Valor Parcela', max_length=100, blank=True, null=True)
+    parcelas = models.IntegerField('ParTot', default=1)
+    nro_da_parcela = models.IntegerField('ParNro', default=1)
+    valor = models.CharField('VlrTot', max_length=100)
+    valor_da_parcela = models.CharField('VlrPar', max_length=100, blank=True, null=True)
     datagasto = models.DateField()
     segmento = models.ForeignKey(Segmento, on_delete=models.PROTECT)
 

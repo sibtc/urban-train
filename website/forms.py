@@ -1,7 +1,7 @@
 # coding=utf-8
 from .models import (
     Segmento, Gasto, Rabbiit, HoraTrabalhada,
-    Pecas, Comercio, Itenspecas, City
+    Pecas, Comercio, Itenspecas
 )
 from django import forms
 from crispy_forms.helper import FormHelper
@@ -11,7 +11,6 @@ from crispy_forms.layout import (
     HTML, Field
 )
 from crispy_forms.bootstrap import InlineField, FormActions
-import datetime
 from django_select2.forms import ModelSelect2Widget
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
@@ -29,24 +28,11 @@ class BaseMeta:
     exclude = ('deleted', 'status')
 
 
-def due_time():
-    return datetime.time()
-
-
 class GastoCustomTitleWidget(ModelSelect2Widget):
     model = Gasto
     search_fields = [
         'name__icontains'
     ]
-
-    def label_from_instance(self, obj):
-        return force_text(obj.name).upper()
-
-# class SegmentoCustomTitleWidget(ModelSelect2Widget):
-#     model = Segmento
-#     search_fields = [
-#         'name__icontains'
-#     ]
 
     def label_from_instance(self, obj):
         return force_text(obj.name).upper()
@@ -77,11 +63,7 @@ class GastoForm(forms.ModelForm):
 
     class Meta(BaseMeta):
         model = Gasto
-        # fields = ['name', 'slug', 'valor', 'datagasto', 'segmento', 'parcelas']
-        # widgets = {
-        #     # 'name': GastoCustomTitleWidget,
-        #     'segmento': SegmentoCustomTitleWidget,
-        # }
+
 
     def __init__(self, *args, **kwargs):
         super(GastoForm, self).__init__(*args, **kwargs)
@@ -95,11 +77,11 @@ class GastoForm(forms.ModelForm):
             ),
             Row(
                 Column('parcelas', css_class='form-group col-md-6 mb-0'),
-                Column('nro_da_parcela', css_class='form-group col-md-6 mb-0'),
+                Column('valor_da_parcela', css_class='form-group col-md-6 mb-0')
             ),
             Row(
                 Column('valor', css_class='form-group col-md-6 mb-0'),
-                Column('valor_da_parcela', css_class='form-group col-md-6 mb-0')
+                Column('nro_da_parcela', css_class='form-group col-md-6 mb-0', readonly=True),
             ),
             Row(
                 Column('datagasto', css_class='form-group col-md-6 mb-0'),
@@ -107,9 +89,7 @@ class GastoForm(forms.ModelForm):
             ),
             Div(
                 FormActions(
-                    Submit('submit', _('Submit'), css_class='btn btn-primary'),
-                    HTML("""{% load i18n %}<a class="btn btn-danger"
-                        href="{{ url_delete }}">{% trans 'Delete' %}</a>"""),
+                    Submit('submit', _('Confirmar'), css_class='btn btn-primary'),
                     css_class="col-md-12"
                 )
             )
@@ -206,15 +186,6 @@ class HoraTrabalhadaForm(forms.ModelForm):
 
     class Meta:
         model = HoraTrabalhada
-        # fields = [
-        #     'title',
-        #     'content',
-        #     'cover_image',
-        #     'tags',
-        #     'published',
-        #     # 'changed_at',
-        # ]
-        # fields = '__all__'
         exclude = ['status']
 
     def __init__(self, *args, **kwargs):

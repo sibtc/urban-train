@@ -14,16 +14,13 @@ from django.urls import path, include
 segmento_view = SegmentoCRUD()
 rabbiit_view = RabbiitCRUD()
 gasto_view = GastoCRUD()
-# horatrabalhada_view = HoraTrabalhadaCRUD()
 localidade_view = CityCRUD()
-# pecas_view = PecasCRUD()
 comercio_view = ComercioCRUD()
 
 urlpatterns = [
     path('', include(segmento_view.get_urls())),
     path('', include(rabbiit_view.get_urls())),
     path('', include(gasto_view.get_urls())),
-    # path('', include(horatrabalhada_view.get_urls())),
     path('', include(localidade_view.get_urls())),
     path('website/horatrabalhada/list/', HoraTrabalhadaListView.as_view(), name="website_horatrabalhada_list"),
     path('website/horatrabalhada/create/', HoraTrabalhadaCreateView.as_view(), name="website_horatrabalhada_create"),
@@ -38,7 +35,7 @@ urlpatterns = [
     path('gastosPorMes/', gastosPorMesView, name="gastosPorMes"),
     path('guiaBolso/', guiaBolsoView, name="guiaBolso"),
     # path('select2/', include('django_select2.urls')),
-    path("summernote/", include('django_summernote.urls')),
+    # path("summernote/", include('django_summernote.urls')),
 ]
 
 if settings.DEBUG:

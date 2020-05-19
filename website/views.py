@@ -7,6 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http.response import HttpResponseRedirect, HttpResponseForbidden
 from utils import change_comma_by_dot
 from .models import (
     Segmento, Gasto, Rabbiit, HoraTrabalhada, City,
@@ -43,9 +44,10 @@ from . import guiabolso
 class GastoCRUD(CRUDView):
     model = Gasto
     template_name_base = 'ccruds'
+    # template_name_base = 'website/gasto/gasto_list.html'
     namespace = None
     check_perms = True
-    views_available = ['create', 'list', 'delete', 'update']
+    views_available = ['list', 'create', 'delete', 'update']
     fields = ['name', 'slug', 'valor', 'nro_da_parcela', 'valor_da_parcela', 'parcelas', 'datagasto',]
     list_fields = ('name', 'parcelas', 'nro_da_parcela', 'valor_da_parcela', 'valor', 'datagasto', 'segmento',)
     search_fields = ('name__icontains',)
@@ -55,31 +57,37 @@ class GastoCRUD(CRUDView):
     add_form = GastoForm
     update_form = GastoForm
 
+    def get_create_view(self):
+        View = super(GastoCRUD, self).get_create_view()
 
-@receiver(post_save, sender=Gasto)
-def _order_post_save(sender, instance, created, **kwargs):
-    cont_parcelas = 2
-    if created:
-        # for cont_parcelas in range(2, instance.parcelas):
-        while instance.parcelas > cont_parcelas:
-            day = 30 * cont_parcelas - 30
-            gasto = Gasto()
-            gasto.name = instance.name
-            gasto.slug = instance.slug
-            gasto.valor = instance.valor
-            gasto.datagasto = instance.datagasto + timedelta(days=day)
-            gasto.segmento = instance.segmento
-            gasto.nro_da_parcela = cont_parcelas
-            gasto.parcelas = instance.parcelas
-            cont_parcelas += 1
-            gasto.save()
-    # if not created:
-        # gasto = Gasto.objects.get(id=instance.id)
-        # day = 30 * instance.nro_da_parcela
-        # datagasto = instance.datagasto + timedelta(days=day)
-        # Gasto.objects.filter(id=instance.id).update(datagasto=datagasto)
-        # gasto.segmento = instance.segmento
-        # gasto.save()
+        class UCreateView(View):
+
+            def form_valid(self, form):
+                self.object = form.save(commit=False)
+                # self.object.save()
+                dados = self.object
+                quantidades_parcelas_faltantes = 1
+                numero_da_parcela = self.object.nro_da_parcela
+                # form.cleaned_data
+                while self.object.parcelas >= quantidades_parcelas_faltantes:
+                # for dado in range(form.cleaned_data.parcelas):
+                    day = 30 * quantidades_parcelas_faltantes - 30
+                    gasto = Gasto()
+                    gasto.name = self.object.name
+                    gasto.slug = self.object.slug
+                    gasto.nro_da_parcela = numero_da_parcela
+                    gasto.valor = self.object.valor
+                    gasto.valor_da_parcela = self.object.valor_da_parcela
+                    gasto.datagasto = self.object.datagasto + timedelta(days=day)
+                    gasto.segmento = self.object.segmento
+                    gasto.nro_da_parcela = quantidades_parcelas_faltantes
+                    gasto.parcelas = self.object.parcelas
+                    self.object.save()
+                    quantidades_parcelas_faltantes += 1
+                    numero_da_parcela += 1
+
+                return HttpResponseRedirect(self.get_success_url())
+        return UCreateView
 
 
 class SegmentoCRUD(CRUDView):
@@ -192,7 +200,6 @@ class HoraTrabalhadaEditView(UpdateView):
     template_name = 'website/horatrabalhada/horatrabalhada_form.html'
     form_class = HoraTrabalhadaForm
 
-
     def get_context_data(self, **kwargs):
         context = super(HoraTrabalhadaEditView, self).get_context_data(**kwargs)
         if self.request.POST:
@@ -201,7 +208,7 @@ class HoraTrabalhadaEditView(UpdateView):
             context['forms'] = HoraTrabalhadaForm(instance=self.object)
         return context
 
-    def form_valid(self, form):
+    # def form_valid(self, form):
     #     context = self.get_context_data()
     #     form = context['forms']
     #     formset = context['formset']
@@ -216,14 +223,9 @@ class HoraTrabalhadaEditView(UpdateView):
     #         # form.total = str(total)
     #         form.save()
     #         formset.save()
-        return redirect('website_horatrabalhada_list')
+    #     return redirect('website_horatrabalhada_list')
     #     else:
     #         return self.render_to_response(self.get_context_data(form=form))
-
-
-# class CabeloDeleteView(CRUDDeleteView):
-#     model = Cabelo
-#     success_url = "/equipe/cabelo/"
 
 class HoraTrabalhadaDeleteView(DeleteView):
     success_url = reverse_lazy("website_horatrabalhada_list")
@@ -240,7 +242,6 @@ class HoraTrabalhadaDeleteView(DeleteView):
     #
     # def get_queryset(self):
     #     return HoraTrabalhada.objects.filter(id=self.kwargs['pk'])
-
 
 
 class CityCRUD(CRUDView):
