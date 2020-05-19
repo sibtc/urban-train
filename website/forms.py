@@ -16,8 +16,6 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from django.forms.models import inlineformset_factory
 
-from django_summernote.widgets import SummernoteWidget
-
 class MyDateInput(forms.DateInput):
     input_type = 'date'
     def __init__(self, **kwargs):
@@ -177,12 +175,12 @@ class RabbiitForm(forms.ModelForm):
 
 
 class HoraTrabalhadaForm(forms.ModelForm):
-    content = forms.CharField(
-        label='Conteúdo',
-        widget=SummernoteWidget(
-            attrs={'summernote': {'width': '100%', 'height': '400px'}}
-        )
-    )
+    # content = forms.CharField(
+    #     label='Conteúdo',
+    #     widget=SummernoteWidget(
+    #         attrs={'summernote': {'width': '100%', 'height': '400px'}}
+    #     )
+    # )
 
     class Meta:
         model = HoraTrabalhada
