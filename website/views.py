@@ -1,45 +1,28 @@
 # coding=utf-8
+import json
+from datetime import date, timedelta
+
+import pandas as pd
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http import HttpResponse
-from django.views.generic import ListView, FormView, CreateView, TemplateView, UpdateView, DeleteView
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.urls import reverse_lazy
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http.response import HttpResponseRedirect, HttpResponseForbidden
+from django.views.generic import ListView, FormView, CreateView, TemplateView, UpdateView, DeleteView
+
 from utils import change_comma_by_dot
-from .models import (
-    Segmento, Gasto, Rabbiit, HoraTrabalhada, City,
-    Pecas, Itenspecas, Comercio
-)
+from vendor.cruds_adminlte.crud import CRUDView
 from .forms import (
     SegmentoForm, GastoForm, RabbiitForm,
     PecasForm, ComercioForm, ItensPecasForm, ItemPecasFormSet,
     HoraTrabalhadaForm
 )
-from vendor.cruds_adminlte.crud import CRUDView
-import json
-import pandas as pd
-from datetime import date, timedelta, datetime
-from . import guiabolso
+from .models import (
+    Segmento, Gasto, Rabbiit, HoraTrabalhada, City,
+    Pecas, Itenspecas, Comercio
+)
 
-
-# def GastoComRequest(request):
-#     if request.method == 'POST':
-#         form = ResultsForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#         if 'Save_and_add_another' in request.POST:
-#             subjectID = form.fields['subjectID']
-#             prepop = {'subjectID': subjectID}
-#             form = ResultsForm(initial=prepop)
-#             return render(request, 'slideAdmin/addResults.html', {'form': form})
-#         elif 'Save_and_return' in request.POST:
-#             return HttpResponseRedirect('/home/')
-#     else:
-#         form = ResultsForm()
-#     return render(request, 'slideAdmin/addResults.html', {'form': form})
 
 class GastoCRUD(CRUDView):
     model = Gasto
@@ -48,7 +31,7 @@ class GastoCRUD(CRUDView):
     namespace = None
     check_perms = True
     views_available = ['list', 'create', 'delete', 'update']
-    fields = ['name', 'slug', 'valor', 'nro_da_parcela', 'valor_da_parcela', 'parcelas', 'datagasto',]
+    fields = ['name', 'slug', 'valor', 'nro_da_parcela', 'valor_da_parcela', 'parcelas', 'datagasto', ]
     list_fields = ('name', 'parcelas', 'nro_da_parcela', 'valor_da_parcela', 'valor', 'datagasto', 'segmento',)
     search_fields = ('name__icontains',)
     paginate_by = 10
@@ -70,7 +53,7 @@ class GastoCRUD(CRUDView):
                 numero_da_parcela = self.object.nro_da_parcela
                 # form.cleaned_data
                 while self.object.parcelas >= quantidades_parcelas_faltantes:
-                # for dado in range(form.cleaned_data.parcelas):
+                    # for dado in range(form.cleaned_data.parcelas):
                     day = 30 * quantidades_parcelas_faltantes - 30
                     gasto = Gasto()
                     gasto.name = self.object.name
@@ -87,6 +70,7 @@ class GastoCRUD(CRUDView):
                     numero_da_parcela += 1
 
                 return HttpResponseRedirect(self.get_success_url())
+
         return UCreateView
 
 
@@ -96,9 +80,9 @@ class SegmentoCRUD(CRUDView):
     namespace = None
     check_perms = True
     views_available = ['create', 'list', 'delete', 'update']
-    list_fields = ['name',]
+    list_fields = ['name', ]
     search_fields = ['name__icontains']
-    split_space_search = ' ' # default False
+    split_space_search = ' '  # default False
     add_form = SegmentoForm
     update_form = SegmentoForm
 
@@ -227,11 +211,11 @@ class HoraTrabalhadaEditView(UpdateView):
     #     else:
     #         return self.render_to_response(self.get_context_data(form=form))
 
+
 class HoraTrabalhadaDeleteView(DeleteView):
     success_url = reverse_lazy("website_horatrabalhada_list")
     model = HoraTrabalhada
     template_name_suffix = '/horatrabalhada_confirm_delete'
-
 
     # def get(self, request, *args, **kwargs):
     #     try:
@@ -384,12 +368,13 @@ class ItensPecasCRUD(CRUDView):
     namespace = None
     check_perms = True
     views_available = ['create', 'list', 'delete', 'update']
-    fields = ['description', 'pecas','price', 'quantity','subtotal',]
-    list_fields = ['id', 'description', 'pecas','price', 'quantity','subtotal',]
+    fields = ['description', 'pecas', 'price', 'quantity', 'subtotal', ]
+    list_fields = ['id', 'description', 'pecas', 'price', 'quantity', 'subtotal', ]
     # inlines = [Itenspecas_AjaxCRUD, ]
     add_form = ItensPecasForm
     update_form = ItensPecasForm
     paginate_by = 40
+
 
 class ComercioCRUD(CRUDView):
     model = Comercio
@@ -399,13 +384,12 @@ class ComercioCRUD(CRUDView):
     check_perms = True
     views_available = ['create', 'list', 'update', 'delete', ]
     fields = ['description']
-    list_fields = ('id', 'description', )
+    list_fields = ('id', 'description',)
     add_form = ComercioForm
     update_form = ComercioForm
 
 
 class GastoSegmentoListView(ListView):
-
     template_name = "website/gastosPorSegmento.html"
     context_object_name = "gastos"
     paginate_by = 5
@@ -441,12 +425,12 @@ def gastosPorMesView(request):
             dtFinal = date.today()
         df = qs.filter(segmento_id=segmento_id) \
             .to_dataframe(
-                ['id', 'name', 'datagasto', 'valor', 'segmento_id'],
-                index='segmento_id'
-            )
+            ['id', 'name', 'datagasto', 'valor', 'segmento_id'],
+            index='segmento_id'
+        )
         if valor:
             if not ',' in valor:
-                valor = ''.join((valor,',00'))
+                valor = ''.join((valor, ',00'))
             df = df.loc[(df['valor'] == str(valor))]
             # df = df.loc[df['valor'] == '50,00']
         df['valor'] = [change_comma_by_dot(e) for e in df['valor']]
@@ -477,44 +461,7 @@ def gastosPorMesView(request):
             'segmentos': segmentos
         }
     return render(request, template, context)
-    # title = 'Lista de Gastos por Mês'
-    # html_string = '''
-    # {% extends "_base.html" %}
-    #   <body>
-    #     {table}
-    #   </body>
-    # '''
-    # return HttpResponse(df.to_html())
-    # return HttpResponse(
-    #     html_string.format(
-    #         table=df.to_html(classes='table table-striped')
-    #     )
-    # )
 
-
-
-# GUIABOLSO scripts
-# ----------------------------------------------
-
-def guiaBolsoView(request):
-    template = "website/guiabolso.html"
-    context = {}
-    # from django.conf import settings
-    # env = settings.env
-    import os
-    if request.method == 'POST':
-        gb = guiabolso.GuiaBolsoSelenium()
-        url = 'https://www.guiabolso.com.br/web/#/login'
-        params = {}
-        params['email'] = os.environ['GUIABOLSO_EMAIL']
-        params['password'] = os.environ['GUIABOLSO_PASSWORD']
-        get_data = gb.main(url, params)
-        print(get_data)
-        context = {
-            'lista_dos_gastos': get_data
-        }
-        print('Tudo OK!')
-    return render(request, template, context)
 
 # CADASTRAMENTO DE GASTOS
 # ----------------------------------------------

@@ -1,15 +1,15 @@
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls import path, include
+
 from .views import (
     GastoSegmentoListView, gastosPorMesView, AutoCompleteView,
     SegmentoCRUD, GastoCRUD, RabbiitCRUD,
-    CityCRUD, ComercioCRUD, guiaBolsoView, PecasListView,
+    CityCRUD, ComercioCRUD, PecasListView,
     PecasCreateView, PecasEditView, HoraTrabalhadaListView,
     HoraTrabalhadaCreateView, HoraTrabalhadaEditView,
     HoraTrabalhadaDeleteView
 )
-
-from django.urls import path, include
 
 segmento_view = SegmentoCRUD()
 rabbiit_view = RabbiitCRUD()
@@ -25,7 +25,8 @@ urlpatterns = [
     path('website/horatrabalhada/list/', HoraTrabalhadaListView.as_view(), name="website_horatrabalhada_list"),
     path('website/horatrabalhada/create/', HoraTrabalhadaCreateView.as_view(), name="website_horatrabalhada_create"),
     path('website/horatrabalhada/edit/<pk>/', HoraTrabalhadaEditView.as_view(), name="website_horatrabalhada_edit"),
-    path('website/horatrabalhada/delete/<pk>/', HoraTrabalhadaDeleteView.as_view(), name="website_horatrabalhada_delete"),
+    path('website/horatrabalhada/delete/<pk>/', HoraTrabalhadaDeleteView.as_view(),
+         name="website_horatrabalhada_delete"),
     path('website/pecas/list/', PecasListView.as_view(), name="website_pecas_list"),
     path('website/pecas/create/', PecasCreateView.as_view(), name="website_pecas_create"),
     path('website/pecas/edit/<pk>/', PecasEditView.as_view(), name="website_pecas_edit"),
@@ -33,9 +34,6 @@ urlpatterns = [
     path('gasto/autocomplete/', AutoCompleteView.as_view()),
     path('gastosPorSegmento/', GastoSegmentoListView.as_view(), name="gastosPorSegmento"),
     path('gastosPorMes/', gastosPorMesView, name="gastosPorMes"),
-    path('guiaBolso/', guiaBolsoView, name="guiaBolso"),
-    # path('select2/', include('django_select2.urls')),
-    # path("summernote/", include('django_summernote.urls')),
 ]
 
 if settings.DEBUG:
@@ -44,4 +42,5 @@ if settings.DEBUG:
     # if "debug_toolbar" in settings.INSTALLED_APPS:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     import debug_toolbar
+
     urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]
