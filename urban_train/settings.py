@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'dynamic_formsets',
     'cruds_adminlte',
-    'table',
+    # 'table',
     # apps
     # 'core',
     'accounts',
