@@ -7,7 +7,8 @@ Free as freedom will be 26/8/2016
 '''
 
 
-from django.conf.urls import url, include
+# from django.conf.urls import url, include
+# from django.urls import url, include
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponseRedirect, HttpResponseForbidden
 from django.urls.base import reverse_lazy, reverse

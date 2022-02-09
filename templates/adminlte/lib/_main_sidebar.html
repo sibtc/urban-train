@@ -35,12 +35,12 @@
                     <ul class="treeview-menu">
                         <li>
                             <a href="{% url 'website_segmento_list' %}">
-                                <i class="fa fa-dollar"></i>{% trans "Comércio  " %}
+                                <i class="fa fa-dollar"></i>Segmento
                             </a>
                         </li>
                         <li>
                             <a href="{% url 'website_gasto_list' %}">
-                                <i class="fa fa-gears"></i>{% trans "Gasto" %}
+                                <i class="fa fa-gears"></i>Gasto
                             </a>
                         </li>
                     </ul>
@@ -63,36 +63,6 @@
                                 <i class="fa fa-gears"></i>Comercio
                             </a>
                         </li>
-                        <li>
-                            <a href="{% url 'website_city_list' %}">
-                                <i class="fa fa-gears"></i>Localidade
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="treeview">
-                    <a href="#">
-                        <i class="fa fa-clock-o"></i> <span>Controle das Horas</span>
-                        <span class="pull-right-container">
-                            <i class="fa fa-angle-left pull-right"></i>
-                        </span>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li>
-                            <a href="{% url 'website_rabbiit_list' %}">
-                                <i class="fa fa-dollar"></i>Rabbiit
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'website_gasto_list' %}">
-                                <i class="fa fa-gears"></i>Planilha
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'website_horatrabalhada_list' %}">
-                                <i class="fa fa-gears"></i>Hora Trabalhada
-                            </a>
-                        </li>
                     </ul>
                 </li>
                 <li class="treeview">
@@ -105,12 +75,22 @@
                     <ul class="treeview-menu">
                         <li>
                             <a href="{% url 'gastosPorMes' %}">
-                                <i class="fa fa-dollar"></i>{% trans "Gastos por mês" %}
+                                <i class="fa fa-dollar"></i>Gastos por mês
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'subdividirSegmentos' %}">
+                                <i class="fa fa-dollar"></i>Subdividir Segmentos
                             </a>
                         </li>
                         <li>
                             <a href="{% url 'gastosPorSegmento' %}">
-                                <i class="fa fa-gears"></i>{% trans "Gastos Por Segmento" %}
+                                <i class="fa fa-gears"></i>Gastos Por Segmento
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'gastosPorParcelas' %}">
+                                <i class="fa fa-gears"></i>Gastos Por Parcelas
                             </a>
                         </li>
                     </ul>

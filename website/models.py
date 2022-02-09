@@ -1,20 +1,13 @@
 # coding=utf-8
 from django.db import models
-from django.urls import reverse
-from django_pandas.managers import DataFrameManager
 from django.utils.translation import gettext as _
+
 from accounts.models import Base
-from .constants import TYPE_VEHICLE
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from utils import change_comma_by_dot
-
-
+# from .constants import TYPE_VEHICLE
+from accounts import constants
 
 class Segmento(Base):
-
-    name = models.CharField('Tipo de comércio', max_length=100)
-    slug = models.SlugField('Identificador', max_length=100)
+    name = models.CharField('Tipo de segmento', max_length=100)
 
     def __str__(self):
         return self.name
@@ -24,24 +17,20 @@ class Segmento(Base):
         verbose_name_plural = 'Segmentos do Comercio'
         ordering = ['id']
 
-    # Serve para quando buscar um comércio trazer os gastos do mesmo
-    def get_absolute_url(self):
-        return reverse(
-            'website:gastosPorSegmento',
-        )
-
-    objects = DataFrameManager()
-
 
 class Gasto(Base):
-
     name = models.CharField(max_length=100, verbose_name=("nome"))
-    slug = models.SlugField('Identificador', max_length=100)
-    parcelas = models.IntegerField('ParTot', default=1)
-    nro_da_parcela = models.IntegerField('ParNro', default=1)
-    valor = models.CharField('VlrTot', max_length=100)
-    valor_da_parcela = models.CharField('VlrPar', max_length=100, blank=True, null=True)
-    datagasto = models.DateField()
+    more_infos = models.CharField(
+        verbose_name=("Infos Complementares"), max_length=100, null=True, blank=True
+    )
+    opcoes_cartao = models.CharField(
+        verbose_name=("Tipo de pagamento"),
+        max_length=1,
+        choices=constants.CARTAO,
+        default=constants.CREDITO,
+    )
+    datagasto = models.DateField(verbose_name=_("Date Spent"))
+    total = models.CharField("Valor Total", max_length=100, null=True, blank=True)
     segmento = models.ForeignKey(Segmento, on_delete=models.PROTECT)
 
     def __str__(self):
@@ -55,52 +44,33 @@ class Gasto(Base):
         verbose_name_plural = 'Gastos'
         ordering = ['-id']
 
-    objects = DataFrameManager()
 
-
-class HoraTrabalhada(Base):
-    price = models.CharField(verbose_name='Ganho/hora', max_length=100, default=0)
-    content = models.TextField(null=True)
-
-    def __str__(self):
-        return self.price
-
-    def __repr__(self):
-        return str(self.price)
-
-    class Meta:
-        verbose_name_plural = 'Horas Trabalhadas'
-        ordering = ['-id']
-
-
-class Rabbiit(Base):
-
-    description = models.CharField(verbose_name="Descrição", max_length=100)
-    time_total = models.TimeField(verbose_name='Total de horas', blank=True, null=True)
-    time_start = models.TimeField(verbose_name='Hora Inicial', blank=True, null=True)
-    time_end = models.TimeField(verbose_name='Hora Final', blank=True, null=True)
-    rate_hour = models.ForeignKey(HoraTrabalhada,
-                                verbose_name='Ganho/hora',
-                                on_delete=models.SET_NULL,
-                                null=True, blank=True)
-    rate_total = models.DecimalField(verbose_name='Total Ganho', max_digits=6, decimal_places=2, blank=True, null=True)
-
-    def __str__(self):
-        return self.description
-
-    def __repr__(self):
-        return str(self.description)
+class Parcelas(models.Model):
+    gasto = models.ForeignKey(
+        Gasto, related_name="parcelas_gasto", on_delete=models.CASCADE
+    )
+    parcelas = models.IntegerField("Total de parcelas", default=1)
+    numero_parcela = models.IntegerField("Número da parcela", default=1)
+    valor_parcela = models.CharField(
+        "Valor da Parcela", max_length=100, blank=True, null=True
+    )
+    data_parcela = models.DateField(
+        verbose_name=_("Installment Date"), blank=True, null=True
+    )
 
     class Meta:
-        verbose_name_plural = 'Rabbiits'
-        ordering = ['-id']
+        verbose_name = "Parcela do gasto"
+        verbose_name_plural = "Parcelas dos gasto"
 
-    objects = DataFrameManager()
+    def __repr__(self):
+        return self.gasto.name
+
+    def __str__(self):
+        return f"Total de parcelas..: {self.parcelas}"
 
 
 class City(Base):
-
-    description = models.CharField(verbose_name=_('Description'), max_length=100)
+    description = models.CharField(verbose_name='Localidade', max_length=100)
 
     def __str__(self):
         return self.description
@@ -115,7 +85,6 @@ class City(Base):
 
 
 class Comercio(Base):
-
     description = models.CharField(
         verbose_name=_('Descrição'),
         max_length=100,
@@ -135,13 +104,17 @@ class Comercio(Base):
 
 
 class Pecas(Base):
-
     data = models.DateField(verbose_name=_('Data'), )
-    veiculo = models.CharField(verbose_name=_('Veículo'), choices=TYPE_VEHICLE, max_length=1)
+    veiculo = models.CharField(verbose_name=_('Veículo'), choices=constants.TYPE_VEHICLE, max_length=1)
     proxtroca = models.IntegerField(verbose_name=_('Próxima Troca'), default=1)
     troca = models.IntegerField(verbose_name=_('Troca'), default=1)
     comercio = models.ForeignKey(Comercio, verbose_name=_('Comércio'), on_delete=models.PROTECT)
-    city = models.ForeignKey(City, verbose_name=_('Localidade'), on_delete=models.PROTECT)
+    city = models.ForeignKey(
+        City, verbose_name='Localidade',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True
+    )
     total = models.CharField(verbose_name=_('Total'), blank=True, null=True, max_length=100)
 
     def __str__(self):
@@ -152,17 +125,13 @@ class Pecas(Base):
         verbose_name_plural = _('Peças')
         ordering = ['id']
 
-    # objects = DataFrameManager()
-
 
 class Itenspecas(models.Model):
-
     description = models.CharField(verbose_name='Descrição', max_length=100)
     pecas = models.ForeignKey(Pecas, verbose_name='Peças', on_delete=models.PROTECT)
     price = models.CharField(verbose_name='Preço', blank=True, null=True, max_length=100)
     quantity = models.IntegerField(verbose_name='Quantidade Comprada', default=1)
     subtotal = models.CharField(verbose_name='Sub-Total', blank=True, null=True, max_length=100)
-
 
     def __str__(self):
         return self.description

@@ -1,0 +1,43 @@
+{% extends '_base.html' %}
+
+{% block content %}
+    <div class="row">
+        <a href="{% url 'website_pecas_list' %}">Voltar Lista de Peças</a>
+    </div>
+    <h1>Comércio: {{ pecas_id }} - {{ name_pecas }}</h1>
+    <div style="margin-left:20px;margin-top:20px">
+        <h4>Lista do item da peça</h4>
+        <div class="box">
+            <div class="box-body table-responsive">
+                <table class="table table-responsive table-condensed">
+                    <thead class="table table-condensed thead-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Descrição</th>
+                        <th>Quantidade</th>
+                        <th>Preço</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in itenspecas %}
+                        <tr>
+                            <td>{{ item.pk }}</td>
+                            <td>{{ item.description }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.price }}</td>
+                        </tr>
+                    {% endfor %}
+                    <strong>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>TOTAL</td>
+                            <td>{{ total }}</td>
+                        </tr>
+                    </strong>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

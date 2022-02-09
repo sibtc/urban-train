@@ -1,0 +1,80 @@
+{% extends '_base.html' %}
+{% load i18n %}
+{% load crud_tags %}
+
+{% block title %}Lista de Cidades{% endblock %}
+{% block page_description %} Lista de Cidades{% endblock %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-4" style="float: left">
+                            <a href="{% url 'website_city_create' %}"
+                               class="btn btn-primary btn-responsive">Criar Nova Cidade
+                            </a>
+                        </div>
+                        <div class="col-lg-4 col-md-4" style="float: left">
+                            <form method="GET">
+                                <input type="submit" name="limpar"
+                                       value="{% trans 'Clear' %} {% trans 'Filter' %}"
+                                       class="btn btn-default btn-responsive">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.box-body -->
+            <div class="box-body">
+                <table id="datatable" class="table table-bordered table-hover">
+                    <div class="box-body">
+                        {% if paginate_position == 'Up' or paginate_position == 'Both' %}
+                            {% include paginate_template %}
+                        {% endif %}
+                        <table id="datatable" class="table table-responsive table-bordered table-hover">
+                            {% if object_list %}
+                                <span>Registros..: <strong>{{ count }}</strong></span>
+                                <thead>
+                                <th>ID</th>
+                                <th>Localidade</th>
+                                <th style="text-align: center">{% trans "Actions" %}</th>
+                                </thead>
+                                <tbody>
+                                {% block tbody %}
+                                    {% for object in object_list %}
+                                        <tr>
+                                            <td>{{ object.id }}</td>
+                                            <td>{{ object.description }}</td>
+                                            <td>
+                                                <a href="{ url 'website_city_edit' object.id %}"
+                                                   class="btn btn-success">{% trans "Edit" %}</a>
+                                                <a href="{ url 'website_city_delete' object.id %}"
+                                                   class="btn btn-danger">{% trans "Delete" %}</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endblock tbody %}
+                                </tbody>
+                            {% else %}
+                                <thead></thead>
+                                <tbody>
+                                <tr>
+                                    <td>{% trans "No items yet." %}</td>
+                                </tr>
+                                </tbody>
+                            {% endif %}
+                        </table>
+
+                        {% if paginate_position == 'Bottom' or paginate_position == 'Both' %}
+                            {% include paginate_template %}
+                        {% endif %}
+
+                    </div>
+
+                    <div class="box-footer"></div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

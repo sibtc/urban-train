@@ -2,45 +2,42 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
 
-from .views import (
-    GastoSegmentoListView, gastosPorMesView, AutoCompleteView,
-    SegmentoCRUD, GastoCRUD, RabbiitCRUD,
-    CityCRUD, ComercioCRUD, PecasListView,
-    PecasCreateView, PecasEditView, HoraTrabalhadaListView,
-    HoraTrabalhadaCreateView, HoraTrabalhadaEditView,
-    HoraTrabalhadaDeleteView
-)
+from .  import views as v
 
-segmento_view = SegmentoCRUD()
-rabbiit_view = RabbiitCRUD()
-gasto_view = GastoCRUD()
-localidade_view = CityCRUD()
-comercio_view = ComercioCRUD()
 
 urlpatterns = [
-    path('', include(segmento_view.get_urls())),
-    path('', include(rabbiit_view.get_urls())),
-    path('', include(gasto_view.get_urls())),
-    path('', include(localidade_view.get_urls())),
-    path('website/horatrabalhada/list/', HoraTrabalhadaListView.as_view(), name="website_horatrabalhada_list"),
-    path('website/horatrabalhada/create/', HoraTrabalhadaCreateView.as_view(), name="website_horatrabalhada_create"),
-    path('website/horatrabalhada/edit/<pk>/', HoraTrabalhadaEditView.as_view(), name="website_horatrabalhada_edit"),
-    path('website/horatrabalhada/delete/<pk>/', HoraTrabalhadaDeleteView.as_view(),
-         name="website_horatrabalhada_delete"),
-    path('website/pecas/list/', PecasListView.as_view(), name="website_pecas_list"),
-    path('website/pecas/create/', PecasCreateView.as_view(), name="website_pecas_create"),
-    path('website/pecas/edit/<pk>/', PecasEditView.as_view(), name="website_pecas_edit"),
-    path('', include(comercio_view.get_urls())),
-    path('gasto/autocomplete/', AutoCompleteView.as_view()),
-    path('gastosPorSegmento/', GastoSegmentoListView.as_view(), name="gastosPorSegmento"),
-    path('gastosPorMes/', gastosPorMesView, name="gastosPorMes"),
+    path('website/gasto/list/', v.GastoListView.as_view(), name='website_gasto_list'),
+    path('website/gasto/create/', v.GastoCreateView.as_view(), name='website_gasto_create'),
+    path('website/gasto/<int:pk>/edit/', v.GastoEditView.as_view(), name='website_gasto_edit'),
+    path("website/gasto/<int:pk>/delete/", v.GastoDeleteView.as_view(), name="website_gasto_delete"),
+
+    path('website/segmento/list/', v.SegmentoListView.as_view(), name='website_segmento_list'),
+    path('website/segmento/create/', v.SegmentoCreateView.as_view(), name='website_segmento_create'),
+    path('website/segmento/<int:pk>/edit/', v.SegmentoEditView.as_view(), name='website_segmento_edit'),
+    path("website/segmento/<int:pk>/delete/", v.SegmentoDeleteView.as_view(), name="website_segmento_delete"),
+
+    path('website/comercio/list/', v.ComercioListView.as_view(), name='website_comercio_list'),
+    path('website/comercio/create/', v.ComercioCreateView.as_view(), name='website_comercio_create'),
+    path('website/comercio/<int:pk>/edit/', v.ComercioEditView.as_view(), name='website_comercio_edit'),
+    path("website/comercio/<int:pk>/delete/", v.ComercioDeleteView.as_view(), name="website_comercio_delete", ),
+
+    path('website/city/list/', v.CityListView.as_view(), name='website_city_list'),
+    path('website/city/create/', v.CityCreateView.as_view(), name='website_city_create'),
+
+    path('website/pecas/list/', v.PecasListView.as_view(), name="website_pecas_list"),
+    path('website/pecas/create/', v.PecasCreateView.as_view(), name="website_pecas_create"),
+    path('website/pecas/<int:pk>/edit/', v.PecasEditView.as_view(), name="website_pecas_edit"),
+    path("website/pecas/<int:pk>/delete/", v.PecasDeleteView.as_view(), name="website_pecas_delete", ),
+    path("website/itenspecas/<int:pk>/details/", v.ItensPecasDetailView.as_view(), name="website_itenspecas_detail", ),
+
+    path("subdividirSegmentos/", v.SubdividirSegmentosView, name="subdividirSegmentos"),
+    path('gasto/autocomplete/', v.AutoCompleteView.as_view()),
+    path("gastosPorParcelas/", v.GastoPorParcelasView, name="gastosPorParcelas"),
+    path('gastosPorSegmento/', v.GastoPorSegmentoView, name="gastosPorSegmento"),
+    path('gastosPorMes/', v.gastosPorMesView, name="gastosPorMes"),
 ]
 
 if settings.DEBUG:
-    # This allows the error pages to be debugged during development, just visit
-    # these url in browser to see how these error pages look like.
-    # if "debug_toolbar" in settings.INSTALLED_APPS:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     import debug_toolbar
-
     urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]

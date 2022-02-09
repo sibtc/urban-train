@@ -72,10 +72,7 @@
     </div>
 {% endblock body %}
 
-{% block javascript %}
-    {% include 'adminlte/lib/_scripts.html' %}
-{% endblock %}
-
-{% block extra_foot %}{% endblock %}
 </body>
+    {% include 'adminlte/lib/_scripts.html' %}
+    {% block scripts %}{% endblock scripts %}
 </html>

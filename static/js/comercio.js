@@ -119,10 +119,18 @@ $(document).ready(function(){
             }
         }
         const data_parcela = $('#id_parcelas_gasto-0-data_parcela');
-        const data_gasto = new Date($('#id_datagasto').val())
-        let next_data = new Date(data_gasto);
-        next_data.setMonth(data_gasto.getMonth() + 1);
-        data_parcela.val(next_data.toISOString().split('T')[0])
+        const data_gasto = $('#id_datagasto').val();
+        const year = data_gasto.split('-')[0];
+        const month_current = data_gasto.split('-')[1];
+        const day = data_gasto.split('-')[2];
+        const convert_to_date = new Date(year, month_current, day);
+        add_one_month = convert_to_date.getMonth()+1;
+        const next_month = new Date(year, add_one_month, day);
+        const month_next = ("0" + next_month.getMonth()).substr(-2);
+        const day_next = ("0" + next_month.getDate()).substr(-2);
+        const next_data = year + "-" + month_next + "-" + day_next;
+        // const datagasto = $('#id_datagasto').val();
+        data_parcela.val(next_data);
     });
     $(document).on('focusout', '#id_parcelas_gasto-0-valor_parcela', function() {
         const parcelas = $('#id_parcelas_gasto-0-parcelas').val();

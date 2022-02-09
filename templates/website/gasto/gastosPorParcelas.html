@@ -1,0 +1,87 @@
+{% extends '_base.html' %}
+
+{% block title %}Gastos por Parcelas{% endblock %}
+
+{% load l10n %}
+{% load widget_tweaks %}
+{% load static %}
+{% load my_filters %}
+
+
+{% block content %}
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Relatório de Parcelas de gasto por Mês</h5>
+                <div class="row">
+                    <div class="col-md-12">
+                        <form method="POST" class="form-inline">
+                            {% csrf_token %}
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Data Inicial</span>
+                                </div>
+                                <input name="dtInicial" type="date" class="form-control">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Data Final</span>
+                                </div>
+                                <input name="dtFinal" type="date" class="form-control">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Por mês</span>
+                                </div>
+                                <select name="porMes">
+                                    {% for key, value in meses.items %}
+                                        <option value="{{ key }}">{{ value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <button class="btn btn-primary mb-3" type="submit">Confirmar</button>
+                        </form>
+                    </div>
+                </div>
+                {% if data %}
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <label for="">Total</label>
+                            <span>
+                            <strong>{{ total }}</strong>
+                        </span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                {% for column in columns %}
+                                    <th>{{ column }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in data %}
+                                <tr>
+                                    <td>{{ item.id }}</td>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.parcelas }}</td>
+                                    <td>{{ item.numero_parcela }}</td>
+                                    <td>{{ item.valor_parcela | currency }}</td>
+                                    <td>{{ item.data_parcela | date:'d/m/Y' }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div><!-- fim do div.card-body -->
+        </div><!-- fim do div.card -->
+    </div><!-- fim do div.col-lg-12 col-md-12 col-sm-12 col-xs-12 -->
+{% endblock content %}
+{% block scripts %}{% endblock scripts %}

@@ -1,0 +1,111 @@
+{% extends '_base.html' %}
+
+{% block title %}Gastos por Segmento{% endblock %}
+
+{% load l10n %}
+{% load widget_tweaks %}
+{% load static %}
+
+
+{% block content %}
+
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Relatório de Segmentos de gasto por Mês</h5>
+                <div class="row">
+                    <div class="col-md-12">
+                        <form method="POST" class="form-inline">
+                            {% csrf_token %}
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Data Inicial</span>
+                                </div>
+                                <input name="dtInicial" type="date" class="form-control">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Data Final</span>
+                                </div>
+                                <input name="dtFinal" type="date" class="form-control">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Segmentos</span>
+                                </div>
+                                <select name="segmento_id">
+                                    {% for segmento in segmentos %}
+                                        <option value="{{ segmento.id }}">{{ segmento }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <button class="btn btn-primary mb-3" type="submit">Confirmar</button>
+                        </form>
+                    </div>
+                </div>
+                {% if data %}
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <label for="">Total</label>
+                            <span>
+                            <strong>{{ total }}</strong>
+                        </span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" style="width:100%">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Datagasto</th>
+                                <th scope="col">Data</th>
+                                <th scope="col">Valor Parcela</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in data %}
+                                <tr>
+                                    <th scope="row">{{ item.id }}</th>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.datagasto | date:'d/m/Y' }}</td>
+                                    <td>{{ item.data_parcela | date:'d/m/Y' }}</td>
+                                    <td>{{ item.valor_parcela }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="row">
+                        <h3>Sem dados no período de: </h3>
+                        <strong>{{ dtInicial }}</strong> até <strong>{{ dtFinal }}</strong>
+                    </div>
+                {% endif %}
+            </div><!-- fim do div.card-body -->
+        </div><!-- fim do div.card -->
+    </div><!-- fim do div.col-lg-12 col-md-12 col-sm-12 col-xs-12 -->
+{% endblock content %}
+{% block scripts %}
+    {{ block.super }}
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.17.1/bootstrap-table.min.js">
+    </script>
+    <script>
+        $('#tabela').bootstrapTable({
+            data:{{data|safe}}
+        });
+
+        function detailFormatter(index, row) {
+            var html = []
+            $.each(row, function (key, value) {
+                html.push('<p><b>' + key + ':</b> ' + value + '</p>')
+            })
+            return html.join('')
+        }
+    </script>
+{% endblock scripts %}

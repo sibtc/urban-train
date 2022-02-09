@@ -1,0 +1,62 @@
+DEBUG=True
+SECRET_KEY=Change for a secret here
+ALLOWED_HOSTS=localhost, 127.0.0.1
+SENTRY_DSN=
+DATABASE_URL=postgres://postgres:postgres@localhost/postgres
+
+# Pagarme credentials
+PAGARME_API_KEY=ak_test_6yd4kbaJrWzdn61m4De5yzn7jZuTt9
+PAGARME_CRYPTO_KEY=
+
+CHAVE_PAGARME_CRIPTOGRAFIA_PUBLICA=ak_test_6yd4kbaJrWzdn61m4De5yzn7jZuTt9
+CHAVE_PAGARME_API_PRIVADA=
+POSTHOG_API_URL=
+POSTHOG_API_KEY=
+
+
+
+# Amazon S3 configuration
+DJANGO_AWS_ACCESS_KEY_ID=
+DJANGO_AWS_SECRET_ACCESS_KEY=
+DJANGO_AWS_STORAGE_BUCKET_NAME=
+
+# Email Configuration
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+EMAIL_HOST=localhost
+EMAIL_PORT=25
+EMAIL_USE_TLS=False
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+
+# Discourse config
+DISCOURSE_BASE_URL=https://forum.python.pro.br/
+DISCOURSE_SSO_SECRET=
+DISCOURSE_API_KEY=
+DISCOURSE_API_USER=
+
+# Active Campaign Config
+ACTIVE_CAMPAIGN_URL=
+ACTIVE_CAMPAIGN_KEY=
+# Make it False on dev to avoiding sending data to ActiveCampaign
+ACTIVE_CAMPAIGN_TURNED_ON=false
+
+# Google Tag Manager Config
+GOOGLE_TAG_MANAGER_ID=GTM-ABC1234
+
+#CELERY_CONFIG
+
+CLOUDAMQP_URL=amqp://guest:guest@localhost:5672
+REDIS_URL=redis://localhost
+
+# RECAPTCHA CONFIG
+
+RECAPTCHA_PUBLIC_KEY=
+RECAPTCHA_PRIVATE_KEY=
+
+
+# Make it False to disable cache. Default is True
+CACHE_TURNED_ON=false
+
+# Hotzapp Integration
+
+HOTZAPP_API_URL=https://hotzapp.me

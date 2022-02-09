@@ -1,23 +1,22 @@
 # coding=utf-8
-from .models import (
-    Segmento, Gasto, Rabbiit, HoraTrabalhada,
-    Pecas, Comercio, Itenspecas
-)
-from django import forms
+from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Layout, Submit, Row,
-    Column, Button, Div,
+    Column, Div,
     HTML, Field
 )
-from crispy_forms.bootstrap import InlineField, FormActions
-from django_select2.forms import ModelSelect2Widget
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
+from cruds_adminlte import DatePickerWidget
+from django import forms
 from django.forms.models import inlineformset_factory
+from django_select2.forms import ModelSelect2Widget
+
+from . import models
+
 
 class MyDateInput(forms.DateInput):
     input_type = 'date'
+
     def __init__(self, **kwargs):
         super().__init__(format='%Y-%m-%d')
 
@@ -27,23 +26,18 @@ class BaseMeta:
 
 
 class GastoCustomTitleWidget(ModelSelect2Widget):
-    model = Gasto
+    model = models.Gasto
     search_fields = [
         'name__icontains'
     ]
 
-    def label_from_instance(self, obj):
-        return force_text(obj.name).upper()
-
 
 class ComercioCustomTitleWidget(ModelSelect2Widget):
-    model = Comercio
+    model = models.Comercio
     search_fields = [
         'description__icontains'
     ]
 
-    def label_from_instance(self, obj):
-        return force_text(obj.description).upper()
 
 class LocalidadeCustomTitleWidget(ModelSelect2Widget):
     # model = City
@@ -51,47 +45,54 @@ class LocalidadeCustomTitleWidget(ModelSelect2Widget):
         'description__icontains'
     ]
 
-    def label_from_instance(self, obj):
-        return force_text(obj.description).upper()
-
 
 class GastoForm(forms.ModelForm):
-
     datagasto = forms.DateField(localize=True, widget=MyDateInput())
 
     class Meta(BaseMeta):
-        model = Gasto
-
+        model = models.Gasto
+        widgets = {
+            "datagasto": DatePickerWidget(
+                attrs={"format": "dd/mm/yyyy", "icon": "fa-calendar"}
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
         super(GastoForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self.helper.form_tag = False
         self.helper.layout = Layout(
             Row(
-                Column('name', css_class='form-group col-md-6 mb-0'),
-            ),
-            Row(
-                Column('slug', css_class='form-group col-md-6 mb-0'),
-            ),
-            Row(
-                Column('parcelas', css_class='form-group col-md-6 mb-0'),
-                Column('valor_da_parcela', css_class='form-group col-md-6 mb-0')
-            ),
-            Row(
-                Column('valor', css_class='form-group col-md-6 mb-0'),
-                Column('nro_da_parcela', css_class='form-group col-md-6 mb-0', readonly=True),
-            ),
-            Row(
-                Column('datagasto', css_class='form-group col-md-6 mb-0'),
-                Column('segmento', css_class='form-group col-md-6 mb-0')
-            ),
-            Div(
-                FormActions(
-                    Submit('submit', _('Confirmar'), css_class='btn btn-primary'),
-                    css_class="col-md-12"
-                )
+                Column("name", css_class="form-group col-md-12 mb-0"),
+                Column("more_infos", css_class="form-group col-md-12 mb-0"),
+                Column("datagasto", css_class="form-group col-md-4 mb-0"),
+                Column("segmento", css_class="form-group col-md-4 mb-0"),
+                Column("opcoes_cartao", css_class="form-group col-md-4 mb-0"),
+                css_class="form-row",
             )
         )
+
+
+class ParcelasForm(forms.ModelForm):
+    data_parcela = forms.DateField(localize=True, widget=MyDateInput())
+
+    class Meta(BaseMeta):
+        model = models.Parcelas
+        widgets = {
+            "data_parcela": DatePickerWidget(
+                attrs={"format": "dd/mm/yyyy", "icon": "fa-calendar"}
+            ),
+        }
+
+
+ParcelasFormSet = inlineformset_factory(
+    models.Gasto,
+    models.Parcelas,
+    form=ParcelasForm,
+    extra=0,
+    can_delete=True,
+    fields=["parcelas", "numero_parcela", "valor_parcela", "data_parcela"],
+)
 
 
 class SegmentoForm(forms.ModelForm):
@@ -103,98 +104,13 @@ class SegmentoForm(forms.ModelForm):
         self.helper.attrs = {'novalidate': ''}
 
         self.helper.layout = Layout(
-            Row(
-                Column('name', css_class='form-group col-md-6 mb-0'),
-                Column('slug', css_class='form-group col-md-6 mb-0'),
-                css_class='form-row'
+            Div(
+                Field('name'),
             ),
-            Submit('submit', _('Submit'),),
         )
 
     class Meta(BaseMeta):
-        model = Segmento
-
-
-class RabbiitForm(forms.ModelForm):
-
-    class Meta(BaseMeta):
-        model = Rabbiit
-        fields = ['description', 'rate_hour',
-                  'time_end', 'time_start',
-                  'time_total', 'rate_total',
-                  ]
-
-    def __init__(self, *args, **kwargs):
-        super(RabbiitForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_tag = False
-        self.fields['time_start'].widget = forms.HiddenInput()
-        self.fields['time_end'].widget = forms.HiddenInput()
-        self.fields['time_total'].widget = forms.HiddenInput()
-
-        self.helper.layout = Layout(
-            'description',
-            'rate_hour',
-            'time_end',
-            'time_start',
-            'time_total',
-            Div(
-                Button('start_timer',
-                       'Start',
-                       css_id='start_timer',
-                       css_class='btn btn-primary',
-                       onclick=''
-               ),
-                Button('end_timer',
-                       'Stop',
-                       css_id='end_timer',
-                       css_class='btn btn-success'
-               ),
-            ),
-            InlineField(
-                Div(
-                    HTML("<span class='show-time' id='show_time_initial'></span>"),
-                    HTML("<span class='show-time' id='show_time'></span>"),
-                    HTML("<span class='show-time' id='show_time_result'></span>"),
-                ),
-            ),
-            Div(
-                Submit('submit', ('Enviar'),),
-            )
-        )
-
-    def save(self, commit=True):
-        o = super(RabbiitForm, self).save(commit=False)
-        t_tempo = self.cleaned_data['time_total'].minute
-        price = float(self.cleaned_data['rate_hour'].price.replace(',', '.'))
-        result = t_tempo / 60 * price
-        self.instance.rate_total = result
-        if commit:
-            o.save()
-        return o
-
-
-class HoraTrabalhadaForm(forms.ModelForm):
-    # content = forms.CharField(
-    #     label='Conteúdo',
-    #     widget=SummernoteWidget(
-    #         attrs={'summernote': {'width': '100%', 'height': '400px'}}
-    #     )
-    # )
-
-    class Meta:
-        model = HoraTrabalhada
-        exclude = ['status']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # self.fields['title'].widget.attrs['class'] = 'uk-input uk-border-rounded'
-        # self.fields['content'].widget.attrs['class'] = 'uk-input uk-border-rounded'
-        # self.fields['cover_image'].widget.attrs['class'] = 'uk-input uk-border-rounded'
-        # self.fields['tags'].widget.attrs['class'] = 'django-select2'
-        # self.fields['tags'].widget.attrs['style'] = 'width: 100%'
-        # self.fields['tags'].required = False
-        # self.fields['published'].widget.attrs['class'] = 'uk-checkbox uk-input uk-border-rounded'
+        model = models.Segmento
 
 
 class PecasForm(forms.ModelForm):
@@ -215,23 +131,14 @@ class PecasForm(forms.ModelForm):
                 css_class='form-row'
             ),
             Row(
-                Column('comercio', css_class="col-md-12"),
-                css_class='form-row'
-            ),
-            Row(
-                Column('city', css_class='form-group col-md-6 mb-0'),
-                Column('total', css_class='form-group col-md-6 mb-0'),
-                css_class='form-row'
-            )
+                Column('comercio', css_class="col-md-12"), css_class='form-row'),
         )
 
     class Meta(BaseMeta):
-        model = Pecas
+        model = models.Pecas
 
 
 class ItensPecasForm(forms.ModelForm):
-
-    # subtotal = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}))
 
     def __init__(self, *args, **kwargs):
         super(ItensPecasForm, self).__init__(*args, **kwargs)
@@ -245,27 +152,17 @@ class ItensPecasForm(forms.ModelForm):
                 Field('quantity', wrapper_class="col-md-3"),
                 Field('subtotal', wrapper_class="col-md-3"),
             ),
-            Div(
-                FormActions(
-                    Submit('submit', _('Submit'), css_class='btn btn-primary'),
-                    HTML("""{% load i18n %}
-                                {% if url_delete %}
-                                <a class="btn btn-danger"
-                                  href="{{ url_delete }}">{% trans 'Excluir' %}</a>
-                                {% endif %}  
-                                  """),
-                    css_class="col-md-3"
-                )
-            )
         )
 
     class Meta(BaseMeta):
-        model = Itenspecas
+        model = models.Itenspecas
+
 
 ItemPecasFormSet = inlineformset_factory(
-    Pecas, Itenspecas, form=ItensPecasForm,
+    models.Pecas, models.Itenspecas, form=ItensPecasForm,
     extra=0, can_delete=True
 )
+
 
 class ComercioForm(forms.ModelForm):
 
@@ -275,28 +172,27 @@ class ComercioForm(forms.ModelForm):
         self.helper.form_tag = False
 
         self.helper.layout = Layout(
-            Div(
+            Row(
                 Field('description', wrapper_class="col-md-12"),
-            ),
-            Div(
-                FormActions(
-                    Submit('submit', _('Enviar'), css_class='btn btn-primary'),
-                    HTML("""{% load i18n %}
-                                        {% if url_delete %}
-                                        <a class="btn btn-danger"
-                                          href="{{ url_delete }}">{% trans 'Delete' %}</a>
-                                        {% endif %}  
-                                          """),
-                    css_class="col-md-12"
-                )
             )
         )
 
     class Meta(BaseMeta):
-        model = Comercio
+        model = models.Comercio
 
-ItemPecasFormSet = inlineformset_factory(
-    Pecas, Itenspecas, form=ItensPecasForm,
-    fields=['description', 'pecas', 'price', 'quantity', 'subtotal'],
-    extra=1, can_delete=True
-)
+
+class CityForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(CityForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_tag = False
+
+        self.helper.layout = Layout(
+            Row(
+                Field('description', wrapper_class="col-md-12"),
+            )
+        )
+
+    class Meta(BaseMeta):
+        model = models.City

@@ -1,0 +1,71 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% block head_title %}{{ template_title }}{% endblock %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+
+    <div class="row">
+        <a href="{% url 'website_gasto_list' %}">Voltar Lista de Gastos</a>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h3 class="page-header text-center lead">Cadastro Gasto</h3>
+            {% if last_data %}
+                <h5 class="text-center">
+                    Dados anteriores: <strong>{{ last_data }}-{{ last_data.datagasto }}-{{ last_data.total }}</strong>
+                </h5>
+            {% endif %}
+        </div>
+    </div>
+    <form action="" method="POST">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                {% csrf_token %}
+                {% crispy forms %}
+            </div>
+        </div>
+        {{ formset.management_form }}
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <h3 class="page-header text-center lead">Parcelas</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-md-offset-2">
+                <div id="itens-parcelas" class="form-inline form-group">
+                    {% for parcelas in formset %}
+                        <div id="gastos-{{ forloop.counter0 }}">
+                            {{ parcelas|crispy }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <a class="btn btn-info" id="add-parcelas">
+                    <i class="fa fa-plus"></i>{% trans "Add" %}
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-inline buttons">
+                    <button class="btn btn-primary pull-right" value="Save">
+                        <i class="fa fa-floppy-o"></i>Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/formset-gasto.js' %}"></script>
+    <script src="{% static 'js/gasto.js' %}"></script>
+    <script type="text/html" id="item-parcela">
+        <div id="gastos-__prefix__" style="margin-top: 10px">
+            {{ formset.empty_form|crispy }}
+        </div>
+    </script>
+    {{ form.media.js }}
+{% endblock scripts %}

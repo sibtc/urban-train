@@ -1,409 +1,479 @@
 # coding=utf-8
 import json
-from datetime import date, timedelta
+import re
+from datetime import datetime
 
-import pandas as pd
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q
+from django.db.models import Q, F
 from django.http import HttpResponse
-from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, FormView, CreateView, TemplateView, UpdateView, DeleteView
+from django.views.generic import ListView, FormView, CreateView, UpdateView, DeleteView, DetailView
 
+from accounts.constants import MESES
+from tools.utils import change_comma_by_dot, add_one_month
 from utils import change_comma_by_dot
-from vendor.cruds_adminlte.crud import CRUDView
-from .forms import (
-    SegmentoForm, GastoForm, RabbiitForm,
-    PecasForm, ComercioForm, ItensPecasForm, ItemPecasFormSet,
-    HoraTrabalhadaForm
-)
-from .models import (
-    Segmento, Gasto, Rabbiit, HoraTrabalhada, City,
-    Pecas, Itenspecas, Comercio
-)
+from . import forms
+from . import models
 
 
-class GastoCRUD(CRUDView):
-    model = Gasto
-    template_name_base = 'ccruds'
-    # template_name_base = 'website/gasto/gasto_list.html'
-    namespace = None
-    check_perms = True
-    views_available = ['list', 'create', 'delete', 'update']
-    fields = ['name', 'slug', 'valor', 'nro_da_parcela', 'valor_da_parcela', 'parcelas', 'datagasto', ]
-    list_fields = ('name', 'parcelas', 'nro_da_parcela', 'valor_da_parcela', 'valor', 'datagasto', 'segmento',)
-    search_fields = ('name__icontains',)
-    paginate_by = 10
-    paginate_template = 'cruds/pagination/prev_next.html'
-
-    add_form = GastoForm
-    update_form = GastoForm
-
-    def get_create_view(self):
-        View = super(GastoCRUD, self).get_create_view()
-
-        class UCreateView(View):
-
-            def form_valid(self, form):
-                self.object = form.save(commit=False)
-                # self.object.save()
-                dados = self.object
-                quantidades_parcelas_faltantes = 1
-                numero_da_parcela = self.object.nro_da_parcela
-                # form.cleaned_data
-                while self.object.parcelas >= quantidades_parcelas_faltantes:
-                    # for dado in range(form.cleaned_data.parcelas):
-                    day = 30 * quantidades_parcelas_faltantes - 30
-                    gasto = Gasto()
-                    gasto.name = self.object.name
-                    gasto.slug = self.object.slug
-                    gasto.nro_da_parcela = numero_da_parcela
-                    gasto.valor = self.object.valor
-                    gasto.valor_da_parcela = self.object.valor_da_parcela
-                    gasto.datagasto = self.object.datagasto + timedelta(days=day)
-                    gasto.segmento = self.object.segmento
-                    gasto.nro_da_parcela = quantidades_parcelas_faltantes
-                    gasto.parcelas = self.object.parcelas
-                    self.object.save()
-                    quantidades_parcelas_faltantes += 1
-                    numero_da_parcela += 1
-
-                return HttpResponseRedirect(self.get_success_url())
-
-        return UCreateView
-
-
-class SegmentoCRUD(CRUDView):
-    model = Segmento
-    template_name_base = 'ccruds'
-    namespace = None
-    check_perms = True
-    views_available = ['create', 'list', 'delete', 'update']
-    list_fields = ['name', ]
-    search_fields = ['name__icontains']
-    split_space_search = ' '  # default False
-    add_form = SegmentoForm
-    update_form = SegmentoForm
-
-
-class RabbiitCRUD(CRUDView):
-    model = Rabbiit
-    template_name_base = 'ccruds'
-    namespace = None
-    check_perms = True
-    views_available = ['create', 'list', 'delete', 'update']
-    list_fields = [
-        'created_at', 'description', 'time_start',
-        'time_end', 'time_total', 'rate_hour',
-        'rate_total',
-    ]
-    search_fields = ['description__icontains']
-    add_form = RabbiitForm
-    update_form = RabbiitForm
-
-
-class HoraTrabalhadaListView(TemplateView):
-    model = HoraTrabalhada
-    template_name = 'website/horatrabalhada/horatrabalhada_list.html'
-    paginate_by = 10
-
-    def get_queryset(self):
-        queryset_list = HoraTrabalhada.objects.all()
-        query = self.request.GET.get("q")
-        if query:
-            queryset_list = queryset_list.filter(
-                Q(comercio__icontains=query) |
-                Q(data__icontains=query)
-            ).distinct()
-
-        paginator = Paginator(queryset_list, 5)  # Show 5 pecas per page
-        page = self.request.GET.get('page')
-        try:
-            queryset_list = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            queryset_list = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 999), deliver last page of results.
-            queryset_list = paginator.page(paginator.num_pages)
-
-        return queryset_list
+class GastoListView(ListView):
+    template_name = "website/gasto/gasto_list.html"
+    model = models.Gasto
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        list_pecas = HoraTrabalhada.objects.order_by('-id')
-        # queryset_list = Pecas.objects.all()
-        query = self.request.GET.get("q")
-        if query:
-            list_pecas = list_pecas.filter(
-                Q(comercio__description__icontains=query) |
-                Q(data__icontains=query)
-            ).distinct()
-        paginator = Paginator(list_pecas, self.paginate_by)
-
-        page = self.request.GET.get('page')
-
-        try:
-            object_list = paginator.page(page)
-        except PageNotAnInteger:
-            object_list = paginator.page(1)
-        except EmptyPage:
-            object_list = paginator.page(paginator.num_pages)
-        context['object_list'] = object_list
+        context = super(GastoListView, self).get_context_data(**kwargs)
+        # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
+        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
+                              'segmento']
+        context['count'] = self.get_queryset().count()
         return context
 
+    def get_queryset(self):
+        queryset = super(GastoListView, self).get_queryset()
+        if search := self.request.GET.get('search'):
+            RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
+            # Essa linha qdo quero trazer o ID
+            if RE_INT.match(search):
+                queryset = queryset.filter(id=search)
+            else:
+                queryset = queryset.filter(
+                    Q(name__icontains=search)
+                )
+        return queryset
+        # return super().get_queryset().get(id=self.kwargs['pk'])
 
-class HoraTrabalhadaCreateView(CreateView):
-    model = HoraTrabalhada
-    template_name = 'website/horatrabalhada/horatrabalhada_form.html'
-    form_class = HoraTrabalhadaForm
+
+class GastoCreateView(CreateView):
+    model = models.Gasto
+    template_name = "website/gasto/gasto_form.html"
+    form_class = forms.GastoForm
 
     def get_context_data(self, **kwargs):
-        context = super(HoraTrabalhadaCreateView, self).get_context_data(**kwargs)
+        context = super(GastoCreateView, self).get_context_data(**kwargs)
         if self.request.POST:
-            context['forms'] = HoraTrabalhadaForm(self.request.POST)
+            context["forms"] = forms.GastoForm(self.request.POST)
+            context["formset"] = forms.ParcelasFormSet(self.request.POST)
         else:
-            context['forms'] = HoraTrabalhadaForm()
+            context["forms"] = forms.GastoForm()
+            context["formset"] = forms.ParcelasFormSet()
+            context["last_data"] = models.Gasto.objects.first()
         return context
 
     def form_valid(self, form):
         context = self.get_context_data()
-        forms = context['forms']
-        if forms.is_valid():
-            self.object = form.save()
-            forms.instance = self.object
-            forms.save()
-            return redirect('website_horatrabalhada_list')
-        else:
+        forms = context["forms"]
+        formset = context["formset"]
+        validated = forms.is_valid()
+        if not formset.is_valid() or not validated:
             return self.render_to_response(self.get_context_data(form=form))
+        gasto = forms.save(commit=False)
+        total = 0.00
+        for price in formset.cleaned_data:
+            if len(price) > 0:
+                vlr_parcela = price["valor_parcela"]
+                if "." in vlr_parcela:
+                    vlr_parcela = vlr_parcela.replace(".", "")
+                total += float(vlr_parcela.replace(",", "."))
+        gasto.total = round(total, 2)
+        gasto.save()
+        formset.instance = gasto
+        formset.save()
+        return redirect("website_gasto_list")
 
 
-class HoraTrabalhadaEditView(UpdateView):
-    model = HoraTrabalhada
-    template_name = 'website/horatrabalhada/horatrabalhada_form.html'
-    form_class = HoraTrabalhadaForm
+class GastoEditView(UpdateView):
+    model = models.Gasto
+    template_name = "website/gasto/gasto_form.html"
+    form_class = forms.GastoForm
 
     def get_context_data(self, **kwargs):
-        context = super(HoraTrabalhadaEditView, self).get_context_data(**kwargs)
+        context = super(GastoEditView, self).get_context_data(**kwargs)
         if self.request.POST:
-            context['forms'] = HoraTrabalhadaForm(self.request.POST, instance=self.object)
+            context["forms"] = forms.GastoForm(self.request.POST, instance=self.object)
+            context["formset"] = forms.ParcelasFormSet(
+                self.request.POST, instance=self.object
+            )
         else:
-            context['forms'] = HoraTrabalhadaForm(instance=self.object)
+            context["forms"] = forms.GastoForm(instance=self.object)
+            context["formset"] = forms.ParcelasFormSet(instance=self.object)
         return context
 
-    # def form_valid(self, form):
-    #     context = self.get_context_data()
-    #     form = context['forms']
-    #     formset = context['formset']
-    #     if form.is_valid():
-    #         sizeIensPecas = len(formset.cleaned_data)
-    #         try:
-    #             form.cleaned_data['total'] = str(total)
-    #         except Exception as err:
-    #             form.cleaned_data['total'] = 0
-    #             print(f'Err.: {err}')
-    #         # form = form.save(commit=False)
-    #         # form.total = str(total)
-    #         form.save()
-    #         formset.save()
-    #     return redirect('website_horatrabalhada_list')
-    #     else:
-    #         return self.render_to_response(self.get_context_data(form=form))
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context["forms"]
+        formset = context["formset"]
+        validated = forms.is_valid()
+        if not formset.is_valid() or not validated:
+            return self.render_to_response(self.get_context_data(form=form))
+        gasto = forms.save(commit=False)
+        total = 0.00
+        for price in formset.cleaned_data:
+            if len(price) > 0:
+                total += float(price["valor_parcela"].replace(",", "."))
+        gasto.total = round(total, 2)
+        gasto.save()
+        formset.instance = gasto
+        formset.save()
+        return redirect("website_gasto_list")
 
 
-class HoraTrabalhadaDeleteView(DeleteView):
-    success_url = reverse_lazy("website_horatrabalhada_list")
-    model = HoraTrabalhada
-    template_name_suffix = '/horatrabalhada_confirm_delete'
-
-    # def get(self, request, *args, **kwargs):
-    #     try:
-    #         self.get_queryset().get(id=kwargs['pk']).delete()
-    #     except Exception as err:
-    #         print(err)
-    #     return self.post(request, *args, **kwargs)
-    #
-    # def get_queryset(self):
-    #     return HoraTrabalhada.objects.filter(id=self.kwargs['pk'])
+class GastoDeleteView(DeleteView):
+    success_url = reverse_lazy("website_gasto_list")
+    model = models.Gasto
+    template_name_suffix = "/gastos_confirm_delete"
 
 
-class CityCRUD(CRUDView):
-    model = City
-    template_name_base = 'ccruds'
-    namespace = None
-    check_perms = True
-    views_available = ['create', 'list', 'delete', 'update']
-    fields = ['id', 'description', ]
-    list_fields = ['id', 'description', ]
-
-
-class PecasListView(TemplateView):
-    model = Pecas
-    template_name = 'website/pecas_list.html'
+class ComercioListView(ListView):
+    template_name = "website/pecas/comercio_list.html"
+    model = models.Comercio
     paginate_by = 10
 
+    def get_context_data(self, **kwargs):
+        context = super(ComercioListView, self).get_context_data(**kwargs)
+        # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
+        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
+                              'segmento']
+        context['count'] = self.get_queryset().count()
+        return context
+
     def get_queryset(self):
-        queryset_list = Pecas.objects.all()
-        query = self.request.GET.get("q")
-        if query:
-            queryset_list = queryset_list.filter(
-                Q(comercio__icontains=query) |
-                Q(data__icontains=query)
-            ).distinct()
+        queryset = super(ComercioListView, self).get_queryset()
 
-        paginator = Paginator(queryset_list, 5)  # Show 5 pecas per page
-        page = self.request.GET.get('page')
-        try:
-            queryset_list = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            queryset_list = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 999), deliver last page of results.
-            queryset_list = paginator.page(paginator.num_pages)
+        data = self.request.GET
 
-        return queryset_list
+        if search := data.get('search'):
+            RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
+            # Essa linha qdo quero trazer o ID do gasto
+            if RE_INT.match(search):
+                queryset = queryset.filter(id=search)
+            else:
+                queryset = queryset.filter(
+                    Q(description__icontains=search)
+                )
+
+        return queryset
+
+
+class ComercioCreateView(CreateView):
+    model = models.Comercio
+    template_name = "website/pecas/comercio_form.html"
+    form_class = forms.ComercioForm
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        list_pecas = Pecas.objects.order_by('-id')
-        # queryset_list = Pecas.objects.all()
-        query = self.request.GET.get("q")
-        if query:
-            list_pecas = list_pecas.filter(
-                Q(comercio__description__icontains=query) |
-                Q(data__icontains=query)
-            ).distinct()
-        paginator = Paginator(list_pecas, self.paginate_by)
-
-        page = self.request.GET.get('page')
-
-        try:
-            object_list = paginator.page(page)
-        except PageNotAnInteger:
-            object_list = paginator.page(1)
-        except EmptyPage:
-            object_list = paginator.page(paginator.num_pages)
-        context['object_list'] = object_list
-        # context['object_list'] = Pecas.objects.order_by('-id')
+        context = super(ComercioCreateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context["forms"] = forms.ComercioForm(self.request.POST)
+        else:
+            context["forms"] = forms.ComercioForm()
+            context["last_data"] = models.Gasto.objects.first()
         return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context["forms"]
+        if not forms.is_valid():
+            return self.render_to_response(self.get_context_data(form=form))
+        forms.save()
+        return redirect("website_comercio_list")
+
+
+class ComercioEditView(UpdateView):
+    model = models.Comercio
+    template_name = "website/pecas/comercio_form.html"
+    form_class = forms.ComercioForm
+
+    def get_context_data(self, **kwargs):
+        context = super(ComercioEditView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context["forms"] = forms.ComercioForm(self.request.POST, instance=self.object)
+        else:
+            context["forms"] = forms.ComercioForm(instance=self.object)
+            context["last_data"] = models.Gasto.objects.first()
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context["forms"]
+        if not forms.is_valid():
+            return self.render_to_response(self.get_context_data(form=form))
+        forms.save()
+        return redirect("website_comercio_list")
+
+
+class ComercioDeleteView(DeleteView):
+    success_url = reverse_lazy("website_comercio_list")
+    model = models.Comercio
+    template_name = "website/pecas/comercio_confirm_delete.html"
+
+
+class CityListView(ListView):
+    template_name = "website/pecas/city_list.html"
+    model = models.City
+
+    def get_queryset(self):
+        return models.City.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super(CityListView, self).get_context_data(**kwargs)
+        list_exam = models.City.objects.all()
+        context['current_segmento'] = list_exam
+        context["count"] = models.City.objects.count()
+        return context
+
+
+class CityCreateView(CreateView):
+    model = models.City
+    template_name = "website/pecas/city_form.html"
+    form_class = forms.CityForm
+
+    def get_context_data(self, **kwargs):
+        context = super(CityCreateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context["forms"] = forms.CityForm(self.request.POST)
+        else:
+            context["forms"] = forms.CityForm()
+            context["last_data"] = models.City.objects.first()
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context["forms"]
+        if not forms.is_valid():
+            return self.render_to_response(self.get_context_data(form=form))
+        forms.save()
+        return redirect("website_city_list")
+
+
+class PecasListView(ListView):
+    model = models.Pecas
+    template_name = 'website/pecas/pecas_list.html'
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        context = super(PecasListView, self).get_context_data(**kwargs)
+        # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
+        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
+                              'segmento']
+        context['count'] = self.get_queryset().count()
+        return context
+
+    def get_queryset(self):
+        queryset = super(PecasListView, self).get_queryset()
+        RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
+
+        data = self.request.GET
+
+        if search := data.get('search'):
+            # Essa linha qdo quero trazer o ID do gasto
+            if RE_INT.match(search):
+                queryset = queryset.filter(id=search)
+            else:
+                queryset = queryset.filter(
+                    Q(comercio__description__icontains=search)
+                )
+
+        if type_vehicle := data.get("type_vehicle"):
+            queryset = queryset.filter(
+                Q(veiculo=type_vehicle)
+            )
+
+        return queryset
 
 
 class PecasCreateView(CreateView):
-    model = Pecas
-    template_name = 'website/pecas_create.html'
-    form_class = PecasForm
+    model = models.Pecas
+    template_name = 'website/pecas/pecas_form.html'
+    form_class = forms.PecasForm
 
     def get_context_data(self, **kwargs):
         context = super(PecasCreateView, self).get_context_data(**kwargs)
         if self.request.POST:
-            context['forms'] = PecasForm(self.request.POST)
-            context['formset'] = ItemPecasFormSet(self.request.POST)
+            context['forms'] = forms.PecasForm(self.request.POST)
+            context['formset'] = forms.ItemPecasFormSet(self.request.POST)
         else:
-            context['forms'] = PecasForm()
-            context['formset'] = ItemPecasFormSet()
+            context['forms'] = forms.PecasForm()
+            context['formset'] = forms.ItemPecasFormSet()
         return context
 
     def form_valid(self, form):
         context = self.get_context_data()
         forms = context['forms']
         formset = context['formset']
-        if forms.is_valid() and formset.is_valid():
-            self.object = form.save()
-            forms.instance = self.object
-            formset.instance = self.object
-            forms.save()
-            formset.save()
-            return redirect('website_pecas_list')
-        else:
+        if not forms.is_valid() or not formset.is_valid():
             return self.render_to_response(self.get_context_data(form=form))
+        pecas = forms.save(commit=False)
+        total = 0.00
+        for price in formset.cleaned_data:
+            total += float(price["subtotal"].replace(",", "."))
+        pecas.total = round(total, 2)
+        pecas.save()
+        formset.instance = pecas
+        formset.save()
+        return redirect("website_pecas_list")
 
 
 class PecasEditView(UpdateView):
-    model = Pecas
-    template_name = 'website/pecas_create.html'
-    form_class = PecasForm
+    model = models.Pecas
+    template_name = 'website/pecas/pecas_form.html'
+    form_class = forms.PecasForm
 
     def get_context_data(self, **kwargs):
         context = super(PecasEditView, self).get_context_data(**kwargs)
         if self.request.POST:
-            context['forms'] = PecasForm(self.request.POST, instance=self.object)
-            context['formset'] = ItemPecasFormSet(self.request.POST, instance=self.object)
+            context['forms'] = forms.PecasForm(self.request.POST, instance=self.object)
+            context['formset'] = forms.ItemPecasFormSet(self.request.POST, instance=self.object)
         else:
-            context['forms'] = PecasForm(instance=self.object)
-            context['formset'] = ItemPecasFormSet(instance=self.object)
+            context['forms'] = forms.PecasForm(instance=self.object)
+            context['formset'] = forms.ItemPecasFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context["forms"]
+        formset = context["formset"]
+        validated = forms.is_valid()
+        if not formset.is_valid() or not validated:
+            return self.render_to_response(self.get_context_data(form=form))
+        pecas = forms.save(commit=False)
+        total = 0.00
+        for price in formset.cleaned_data:
+            if len(price) > 0:
+                total += float(price["subtotal"].replace(",", "."))
+        pecas.total = round(total, 2)
+        pecas.save()
+        formset.instance = pecas
+        formset.save()
+        return redirect("website_pecas_list")
+
+
+class PecasDeleteView(DeleteView):
+    success_url = reverse_lazy("website_pecas_list")
+    model = models.Pecas
+    template_name = "website/pecas/pecas_confirm_delete.html"
+
+
+class ItensPecasDetailView(DetailView):
+    model = models.Pecas
+    template_name = "website/pecas/itenspecas_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(ItensPecasDetailView, self).get_context_data(**kwargs)
+        pecas_id = self.kwargs['pk']
+        name_pecas = context['pecas']
+        queryset = models.Itenspecas.objects.filter(pecas=name_pecas)
+        context["itenspecas"] = queryset
+        context["pecas_id"] = pecas_id
+        context["name_pecas"] = name_pecas
+        context["total"] = models.Pecas.objects.get(id=pecas_id).total
+        return context
+
+
+class SegmentoListView(ListView):
+    template_name = "website/gasto/segmento_list.html"
+    model = models.Segmento
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        context = super(SegmentoListView, self).get_context_data(**kwargs)
+        # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
+        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
+                              'segmento']
+        context['count'] = self.get_queryset().count()
+        return context
+
+    def get_queryset(self):
+        queryset = super(SegmentoListView, self).get_queryset()
+
+        data = self.request.GET
+        if search := data.get('search'):
+            RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
+            # Essa linha qdo quero trazer o ID do gasto
+            if RE_INT.match(search):
+                queryset = queryset.filter(id=search)
+            else:
+                queryset = queryset.filter(
+                    Q(name__icontains=search)
+                )
+        return queryset
+
+
+class SegmentoCreateView(CreateView):
+    model = models.Gasto
+    template_name = 'website/gasto/segmento_form.html'
+    form_class = forms.SegmentoForm
+
+    def get_context_data(self, **kwargs):
+        context = super(SegmentoCreateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context['forms'] = forms.SegmentoForm(self.request.POST)
+        else:
+            context['forms'] = forms.SegmentoForm()
+            context['create_or_edit'] = 'CADASTRAR'
         return context
 
     def form_valid(self, form):
         context = self.get_context_data()
         form = context['forms']
-        formset = context['formset']
-        if form.is_valid() and formset.is_valid():
-            sizeIensPecas = len(formset.cleaned_data)
-            total = 0.00
-            for chave in range(sizeIensPecas):
-                try:
-                    total += float(formset.cleaned_data[chave]['subtotal'])
-                except:
-                    ...
-            try:
-                form.cleaned_data['total'] = str(total)
-            except Exception as err:
-                form.cleaned_data['total'] = 0
-                print(f'Err.: {err}')
-            # form = form.save(commit=False)
-            # form.total = str(total)
-            form.save()
-            formset.save()
-            return redirect('website_pecas_list')
-        else:
+        if not form.is_valid():
             return self.render_to_response(self.get_context_data(form=form))
+        form.save()
+        return redirect('website_segmento_list')
 
 
-class ItensPecasCRUD(CRUDView):
-    model = Itenspecas
-    template_name_base = 'ccruds'
-    form_class = PecasForm
-    namespace = None
-    check_perms = True
-    views_available = ['create', 'list', 'delete', 'update']
-    fields = ['description', 'pecas', 'price', 'quantity', 'subtotal', ]
-    list_fields = ['id', 'description', 'pecas', 'price', 'quantity', 'subtotal', ]
-    # inlines = [Itenspecas_AjaxCRUD, ]
-    add_form = ItensPecasForm
-    update_form = ItensPecasForm
-    paginate_by = 40
+class SegmentoEditView(UpdateView):
+    model = models.Segmento
+    template_name = "website/gasto/segmento_form.html"
+    form_class = forms.SegmentoForm
+
+    def get_context_data(self, **kwargs):
+        context = super(SegmentoEditView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            context["forms"] = forms.SegmentoForm(self.request.POST, instance=self.object)
+        else:
+            context["forms"] = forms.SegmentoForm(instance=self.object)
+            context["last_data"] = models.Gasto.objects.first()
+            context['create_or_edit'] = 'EDITAR'
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        forms = context["forms"]
+        if not forms.is_valid():
+            return self.render_to_response(self.get_context_data(form=form))
+        forms.save()
+        return redirect("website_segmento_list")
 
 
-class ComercioCRUD(CRUDView):
-    model = Comercio
-    template_name_base = 'ccruds'  # customer cruds => ccruds
-    namespace = None
-    # search_fields = ('head__name__icontains', 'head__email__icontains')
-    check_perms = True
-    views_available = ['create', 'list', 'update', 'delete', ]
-    fields = ['description']
-    list_fields = ('id', 'description',)
-    add_form = ComercioForm
-    update_form = ComercioForm
+class SegmentoDeleteView(DeleteView):
+    success_url = reverse_lazy("website_segmento_list")
+    model = models.Segmento
+    template_name = "website/gasto/segmento_confirm_delete.html"
 
 
 class GastoSegmentoListView(ListView):
-    template_name = "website/gastosPorSegmento.html"
+    template_name = "website/gasto/gastosPorSegmento.html"
     context_object_name = "gastos"
     paginate_by = 5
 
     def get_queryset(self):
-        slug = 'supermercados'
-        resultado = Gasto.objects.filter(segmento__slug=slug)
-        # resultado = Gasto.objects.filter(segmento__slug=self.kwargs['slug'])
-        return resultado
+        queryset = super(GastoSegmentoListView, self).get_queryset()
+        if search := self.request.GET.get('search'):
+            RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
+            # Essa linha qdo quero trazer o ID
+            if RE_INT.match(search):
+                queryset = queryset.filter(id=search)
+            else:
+                queryset = queryset.filter(
+                    Q(name__icontains=search)
+                )
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super(GastoSegmentoListView, self).get_context_data(**kwargs)
-        list_exam = Gasto.objects.all()
-        context['current_segmento'] = list_exam
+        # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
+        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
+                              'segmento']
+        context['count'] = self.get_queryset().count()
         return context
 
 
@@ -411,84 +481,234 @@ class GastoSegmentoListView(ListView):
 # ----------------------------------------------
 
 def gastosPorMesView(request):
-    template = "website/gastosPorMes.html"
-    qs = Gasto.objects.all()  # Use the Pandas Manager
-    segmentos = Segmento.objects.all()
-    if request.method == 'POST':
-        segmento_id = int(request.POST.get('segmento_id'))
-        dtInicial = request.POST.get('dtInicial')
-        dtFinal = request.POST.get('dtFinal')
-        valor = request.POST.get('valor')
-        if dtInicial == '':
-            dtInicial = '2018-01-01'
-        if dtFinal == '':
-            dtFinal = date.today()
-        df = qs.filter(segmento_id=segmento_id) \
-            .to_dataframe(
-            ['id', 'name', 'datagasto', 'valor', 'segmento_id'],
-            index='segmento_id'
-        )
-        if valor:
-            if not ',' in valor:
-                valor = ''.join((valor, ',00'))
-            df = df.loc[(df['valor'] == str(valor))]
-            # df = df.loc[df['valor'] == '50,00']
-        df['valor'] = [change_comma_by_dot(e) for e in df['valor']]
-        # df['valor'] = [e.replace(",", ".") for e in df['valor']]
-        df['valor'] = df['valor'].astype('float')
-        df['datagasto'] = pd.to_datetime(df['datagasto'])
-        df = df.loc[(df['datagasto'] >= dtInicial) & (df['datagasto'] <= dtFinal)]
-        # df['valor'].loc[(df['datagasto'] >= dtInicial) & (df['datagasto'] <= dtFinal)].sum()
-        """Format the column headers for the Bootstrap table, 
-        they're just a list of field names,
-        duplicated and turned into dicts like this: {'field': 'foo', 'title: 'foo'}
-        columns = [{'field': f, 'title': f} for f in Gasto._Meta.fields]
-        columns = [{'field': f['_verbose_name'], 'title': f} for f in Gasto._meta.fields]
-        """
-        col = [f for f in Gasto._meta.get_fields()]
-        columns = [{'field': f, 'title': f} for f in df.columns]
-        """Write the DataFrame to JSON (as easy as can be)
-            output just the records (no fieldnames) as a collection of tuples
-            Proceed to create your context object containing the columns and the data"""
-
-        # data = df.to_json(orient='records', lines=True)
-        context = {
-            'data': df.itertuples(),
-            'segmentos': segmentos
-        }
+    template = "website/gasto/gastosPorMes.html"
+    if request.method == "POST":
+        context = _extracted_from_GastosPorMesView_4(request)
     else:
-        context = {
-            'segmentos': segmentos
-        }
+        segmentos = models.Segmento.objects.all()
+        context = {"segmentos": segmentos}
     return render(request, template, context)
 
 
-# CADASTRAMENTO DE GASTOS
-# ----------------------------------------------
+# TODO Rename this here and in `GastosPorMesView`
+def _extracted_from_GastosPorMesView_4(request):
+    dtInicial = request.POST.get("dtInicial")
+    dtFinal = request.POST.get("dtFinal")
+    today = datetime.today()
+    """Se não vier com os campos date preenchidos
+        será setado as datas de inicio e fim do mês corrente"""
+    if dtInicial == "":
+        dtInicial = datetime(today.year, today.month + 1, 1)
+    if dtFinal == "":
+        dtFinal = datetime(today.year, today.month + 1, today.day)
+    qs = models.Gasto.objects.select_related("parcelas")
+    qs = qs.exclude(name__startswith='PIX')
+    qs = qs.exclude(name__startswith='TED')
+    qs = qs.exclude(name__startswith='OF')
+    qs = qs.filter(parcelas_gasto__data_parcela__range=[dtInicial, dtFinal])
+    qs = qs.annotate(
+        data_parcela=F("parcelas_gasto__data_parcela"),
+        valor_parcela=F("parcelas_gasto__valor_parcela"),
+        parcelas=F("parcelas_gasto__parcelas"),
+        numero_parcela=F("parcelas_gasto__numero_parcela"),
+    )
+    qs = qs.values("id", "name", "datagasto", "data_parcela", "valor_parcela")
+    qs = qs.order_by("-datagasto")
+    if not qs:
+        return {"dtInicial": dtInicial, "dtFinal": dtFinal}
+    segmento_id = int(request.POST.get("segmento_id"))
+    if segmento_id > 0:
+        qs = qs.filter(segmento_id=segmento_id)
+    vlr_total = sum(
+        float(valor["valor_parcela"].replace(",", ".")) for valor in qs
+    )
+
+    segmentos = models.Segmento.objects.all()
+    return {"data": qs, "total": vlr_total, "segmentos": segmentos}
 
 
 class AutoCompleteView(FormView):
     def get(self, request):
-        q = request.GET.get('term', '').capitalize()
-        if q:
-            gastos = Gasto.objects.filter(name__icontains=q).order_by('name').distinct('name')
-            # gastos = Gasto.objects.filter(name__icontains=q).distinct('name')
+        if q := request.GET.get('term', '').capitalize():
+            gastos = models.Gasto.objects.filter(name__icontains=q)
+            if gastos:
+                gastos.order_by('name').distinct('name')
         else:
-            gastos = Gasto.objects.all()
+            gastos = models.Gasto.objects.all()
         results = []
         for gasto in gastos:
             if results:
                 if gasto.name not in results[0]['name']:
-                    gasto_json = {}
-                    gasto_json['name'] = gasto.name
+                    gasto_json = {'name': gasto.name}
                     results.append(gasto_json)
             else:
-                gasto_json = {}
-                gasto_json['name'] = gasto.name
+                gasto_json = {'name': gasto.name}
                 results.append(gasto_json)
         data = json.dumps(results)
         mimetype = 'application/json'
         return HttpResponse(data, mimetype)
+
+
+def SubdividirSegmentosView(request):
+    template = "website/gasto/subdividirSegmentos.html"
+    segmentos = models.Segmento.objects.all()
+    if request.method == "POST":
+        context = _extracted_from_SubdividirSegmentosView_5(request, segmentos)
+    else:
+        context = {"segmentos": segmentos}
+    return render(request, template, context)
+
+
+# TODO Rename this here and in `SubdividirSegmentosView`
+def _extracted_from_SubdividirSegmentosView_5(request, segmentos):
+    dtInicial = request.POST.get("dtInicial")
+    dtFinal = request.POST.get("dtFinal")
+    """Se não vier com os campos date preenchidos
+        será setado as datas de inicio e fim do mês corrente"""
+    if dtInicial == "":
+        dtInicial = datetime.now()
+    else:
+        # Qdo vem a data ela vem como str e precisamos paassa para o type datetime
+        # já que qdo for mostrar no HTML ele espera datetime e não str
+        dtInicial = datetime.strptime(dtInicial, '%Y-%m-%d')
+    if dtFinal == "":
+        dtFinal = add_one_month()
+    else:
+        # Qdo vem a data ela vem como str e precisamos paassa para o type datetime
+        # já que qdo for mostrar no HTML ele espera datetime e não str
+        dtFinal = datetime.strptime(dtFinal, '%Y-%m-%d')
+    list_ids_segmentos = list(
+        models.Segmento.objects.filter().values('id', 'name').order_by('id')
+    )
+
+    dict_segmentos = {}
+    for segmento in list_ids_segmentos:
+        gastos_por_segmento = models.Gasto.objects.filter(
+            segmento_id=segmento['id'],
+            parcelas_gasto__data_parcela__range=[dtInicial, dtFinal]
+        )
+        if len(gastos_por_segmento) > 0:
+            dict_segmentos[segmento['name']] = len(gastos_por_segmento)
+    nv_dict = {
+        i: dict_segmentos[i]
+        for i in sorted(dict_segmentos, key=dict_segmentos.get, reverse=True)
+    }
+
+    result = {
+        "data": nv_dict,
+        "segmentos": segmentos,
+        "data_inicial": dtInicial,
+        "data_final": dtFinal,
+    }
+    return result
+
+
+def GastoPorParcelasView(request):
+    template = "website/gasto/gastosPorParcelas.html"
+    if request.method == "POST":
+        context = _extracted_from_GastoPorParcelasView_4(request)
+    else:
+        context = {"meses": MESES}
+    return render(request, template, context)
+
+
+# TODO Rename this here and in `GastoPorParcelasView`
+def _extracted_from_GastoPorParcelasView_4(request):
+    dtInicial = request.POST.get("dtInicial")
+    dtFinal = request.POST.get("dtFinal")
+    porMes = request.POST.get("porMes")
+    today = datetime.today()
+    columns = (
+        "id",
+        "name",
+        "parcelas",
+        "numero_parcela",
+        "valor_parcela",
+        "data_parcela",
+    )
+    """Se não vier com os campos date preenchidos
+        será setado as datas de inicio e fim do mês corrente"""
+    if int(porMes) > 0:
+        """Se mês for 1 número concatena o zero antes"""
+        if len(porMes) < 2:
+            porMes = "".join(("0", str(porMes)))
+        dtInicial = datetime(today.year, int(porMes), 1)
+        """Se o mês for FEVEREIRO vai até dia 28"""
+        if today.month == 2:
+            dtFinal = datetime(today.year, today.month, 28)
+        else:
+            dtFinal = datetime(today.year, today.month, 30)
+    if dtInicial == "":
+        dtInicial = datetime(today.year, today.month, 1)
+    if dtFinal == "":
+        """Se o mês for FEVEREIRO vai até dia 28"""
+        if today.month == 2:
+            dtFinal = datetime(today.year, today.month, 28)
+        else:
+            dtFinal = datetime(today.year, today.month, 30)
+    qs = models.Gasto.objects.filter(
+        parcelas_gasto__parcelas__gt=1,
+        parcelas_gasto__data_parcela__range=[dtInicial, dtFinal])
+    qs = qs.annotate(
+        data_parcela=F("parcelas_gasto__data_parcela"),
+        valor_parcela=F("parcelas_gasto__valor_parcela"),
+        parcelas=F("parcelas_gasto__parcelas"),
+        numero_parcela=F("parcelas_gasto__numero_parcela"),
+    )
+    qs = qs.values("id", "name", "parcelas", "numero_parcela", "valor_parcela", "data_parcela")
+    qs = qs.order_by("parcelas_gasto__data_parcela")
+    vlr_total = sum(
+        float(change_comma_by_dot(valor["valor_parcela"])) for valor in qs
+    )
+
+    return {"data": qs, "columns": columns, "total": vlr_total, "meses": MESES}
+
+
+def GastoPorSegmentoView(request):
+    template = "website/gasto/gastosPorSegmento.html"
+    if request.method == "POST":
+        context = _extracted_from_GastoPorSegmentoView_4(request)
+    else:
+        segmentos = models.Segmento.objects.all().order_by('id')
+        context = {
+            "segmentos": segmentos
+        }
+    return render(request, template, context)
+
+
+# TODO Rename this here and in `GastoPorSegmentoView`
+def _extracted_from_GastoPorSegmentoView_4(request):
+    dtInicial = request.POST.get("dtInicial")
+    dtFinal = request.POST.get("dtFinal")
+    today = datetime.today()
+    """Se não vier com os campos date preenchidos
+        será setado as datas de inicio e fim do mês corrente"""
+    if dtInicial == "":
+        dtInicial = datetime(today.year, today.month + 1, 1)
+    if dtFinal == "":
+        dtFinal = datetime(today.year, today.month + 1, today.day)
+    segmento_id = int(request.POST.get("segmento_id"))
+    qs = models.Gasto.objects.select_related("segmento")
+    qs = qs.filter(segmento_id=segmento_id, parcelas_gasto__data_parcela__range=[dtInicial, dtFinal])
+    qs = qs.annotate(
+        data_parcela=F("parcelas_gasto__data_parcela"),
+        valor_parcela=F("parcelas_gasto__valor_parcela"),
+        parcelas=F("parcelas_gasto__parcelas"),
+        numero_parcela=F("parcelas_gasto__numero_parcela")
+    )
+    qs = qs.values("id", "name", "datagasto", "parcelas_gasto__data_parcela", "parcelas_gasto__valor_parcela")
+    qs = qs.order_by("-datagasto")
+    # vlr_total = sum(
+    #     float(valor["valor_parcela"].replace(",", ".")) for valor in qs
+    # )
+    vlr_total = 0.00
+
+    segmentos = models.Segmento.objects.all().order_by('id')
+    return {
+        "data": qs,
+        "total": vlr_total,
+        "segmentos": segmentos,
+    }
 
 
 class AutoResponseView(ListView):

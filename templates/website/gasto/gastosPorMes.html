@@ -1,0 +1,100 @@
+{% extends '_base.html' %}
+
+{% block title %}Gastos por Mês{% endblock %}
+
+{% load l10n %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Relatório de Gasto por Mês</h5>
+                <div class="row">
+                    <div class="col-md-12">
+                        <form method="POST" class="form-inline">
+                            {% csrf_token %}
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text" for="inputGroupSelect01">Tipos</label>
+                                </div>
+                                <select name="segmento_id" class="custom-select" id="inputGroupSelect01">
+                                    <option value="0">Todos</option>
+                                    {% for comercio in segmentos %}
+                                        <option value="{{ comercio.id }}">
+                                            {{ comercio.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Data Inicial</span>
+                                </div>
+                                <input name="dtInicial" type="date" class="form-control">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Data Final</span>
+                                </div>
+                                <input name="dtFinal" type="date" class="form-control">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Valor</span>
+                                </div>
+                                <input name="valor" type="number" class="form-control">
+                            </div>
+                            <button class="btn btn-primary mb-3"
+                                    type="submit">Confirmar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% if data %}
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <label for="">Total</label>
+                            <span><strong>{{ total }}</strong></span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" style="width:100%">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Datagasto</th>
+                                <th scope="col">Data</th>
+                                <th scope="col">Valor Parcela</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in data %}
+                                <tr>
+                                    <th scope="row">{{ item.id }}</th>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.datagasto | date:'d/m/Y' }}</td>
+                                    <td>{{ item.data_parcela | date:'d/m/Y' }}</td>
+                                    <td>{{ item.valor_parcela }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="row">
+                        <h3>Sem dados no período de: </h3>
+                        <strong>{{ dtInicial }}</strong> até <strong>{{ dtFinal }}</strong>
+                    </div>
+                {% endif %}
+            </div><!-- fim do div.card-body -->
+        </div><!-- fim do div.card -->
+    </div><!-- fim do div.col-lg-12 col-md-12 col-sm-12 col-xs-12 -->
+{% endblock %}
+{% block javascript %}
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+{% endblock javascript %}

@@ -1,0 +1,31 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% block head_title %}{{ template_title }}{% endblock %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+    <div class="row">
+        <a href="{% url 'website_segmento_list' %}">Voltar Lista de Segmento</a>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h1 class="page-header text-center lead">{{ create_or_edit }} SEGMENTO</h1>
+        </div>
+    </div>
+    <div class="container">
+    <form method="POST">
+        <div class="row">
+            <div class="col-sm-12">
+                {% csrf_token %}
+                {% crispy forms %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-primary" value="Save"><i class="fa fa-floppy-o"></i> Salvar</button>
+            </div>
+        </div>
+    </form>
+    </div>
+{% endblock %}

@@ -1,6 +1,6 @@
 # coding=utf-8
 from django.contrib.auth import get_user_model
-from django.utils.http import is_safe_url
+# from django.utils.http import is_safe_url
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login, logout as auth_logout
 from django.utils.decorators import method_decorator
@@ -49,8 +49,8 @@ class LoginView(FormView):
     def get_success_url(self):
         redirect_to = self.request.GET.get(self.redirect_field_name)
 
-        if not is_safe_url(redirect_to, self.request.get_host()):
-            redirect_to = self.success_url
+        # if not is_safe_url(redirect_to, self.request.get_host()):
+        #     redirect_to = self.success_url
         return redirect_to
 
 

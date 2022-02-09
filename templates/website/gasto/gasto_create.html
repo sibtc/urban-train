@@ -6,11 +6,11 @@
 
 {% block content %}
     <div class="row">
-        <a href="{% url 'website_pecas_list' %}">Voltar Lista de Peças</a>
+        <a href="{% url 'website_gasto_list' %}">Voltar Lista de Gastos</a>
     </div>
     <div class="row">
         <div class="col-md-6 col-md-offset-3">
-            <h1 class="page-header text-center lead">Cadastro Peças</h1>
+            <h1 class="page-header text-center lead">Cadastro Gasto</h1>
         </div>
     </div>
     <form action="" method="POST">
@@ -46,7 +46,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 {#    <script src="{% static "js/cruds.js" %}"></script>#}
     <script src="{% static "js/jquery.mask.min.js" %}"></script>
-    <script src="{% static 'js/pecas.js' %}"></script>
+    <script src="{% static 'js/gasto.js' %}"></script>
     <script type="text/html" id="item-peca">
         <div id="item-__prefix__" style="margin-top: 10px">
                 {{ formset.empty_form|crispy }}

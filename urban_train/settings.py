@@ -1,31 +1,23 @@
 import os
-import environ
+from functools import partial
 
-BASE_DIR = environ.Path(__file__) - 2
-ROOT_DIR = environ.Path(__file__) - 2
+import dj_database_url
+# from unipath import Path
+from pathlib import Path
 
-env = environ.Env()
-env.read_env(ROOT_DIR('.envs/.local/.env'))
+from decouple import config, Csv
 
-SECRET_KEY = env('DJANGO_SECRET_KEY', default='apjfqc9e8r-9eq3r3u49u4399r43-@#%^^^')
+BASE_DIR = Path(__file__).parent
+ROOT_DIR = Path(__file__).parent.parent
 
-APPS_DIR = ROOT_DIR.path("urban-train")
+DEBUG = config("DEBUG", cast=bool)
 
-DEBUG = env.bool('DJANGO_DEBUG', False)
+SECRET_KEY = config('SECRET_KEY')
 
-ALLOWED_HOSTS = [
-    'gastosluxu.com.br',
-    'localhost',
-    '127.0.0.1',
-    '172.105.148.155',
-    'gastosluxu.herokuapp.com'
-]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 
 INSTALLED_APPS = [
-    # General use templates & template tags (should appear first)
-    'django_adminlte',
-    # Optional: Django admin theme (must be before django.contrib.admin)
-    # 'django_adminlte_theme',
+    # 'django_adminlte',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -64,7 +56,7 @@ ROOT_URLCONF = 'urban_train.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [os.path.join(ROOT_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -79,26 +71,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'urban_train.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+default_db_url = 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
 
-# postgres://USER:PASSWORD@HOST:PORT/NAME
-# DATABASES = {
-#     'default': env.db('DATABASE_URL', default='postgres:///promosys'),
-# }
-# DATABASES['default']['ATOMIC_REQUESTS'] = True
-# DATABASES['default']['conn_max_age'] = 600
+parse_database = partial(dj_database_url.parse, conn_max_age=600)
 
-# If use POSTGRES and AWS
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ['RDS_DB_NAME'],
-        'USER': os.environ['RDS_USERNAME'],
-        'PASSWORD': os.environ['RDS_PASSWORD'],
-        'HOST': os.environ['RDS_HOSTNAME'],
-        'PORT': os.environ['RDS_PORT'],
-        }
+    'default': config('DATABASE_URL', default=default_db_url, cast=parse_database)
 }
 
 # Password validation
@@ -128,21 +106,11 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-# https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
-LOCALE_PATHS = [ROOT_DIR.path("locale")]
 
 # STATIC
 STATIC_URL = "/static/"
-STATIC_ROOT = str(ROOT_DIR("staticfiles"))
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static")
-]
-
-# https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-]
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(ROOT_DIR, "static")]
 
 MEDIA_URL = "/django-summernote/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
@@ -157,11 +125,7 @@ AUTHENTICATION_BACKENDS = (
     'accounts.backends.ModelBackend',
 )
 
-INTERNAL_IPS = [
-    # ...
-    '127.0.0.1',
-    # ...
-]
+INTERNAL_IPS = ['127.0.0.1']
 
 # CACHES
 # ------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 dj-static==0.0.6
-Django==2.2.7
-django_adminlte==1.2
+Django==4.0.2
 django-crispy-forms==1.8.1
 django-cruds-adminlte==0.0.16
 django-dynamic-formsets==0.0.8
