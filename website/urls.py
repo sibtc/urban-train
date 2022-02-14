@@ -1,9 +1,6 @@
-from django.conf import settings
-from django.conf.urls.static import static
-from django.urls import path, include
+from django.urls import path
 
-from .  import views as v
-
+from . import views as v
 
 urlpatterns = [
     path('website/gasto/list/', v.GastoListView.as_view(), name='website_gasto_list'),
@@ -36,8 +33,3 @@ urlpatterns = [
     path('gastosPorSegmento/', v.GastoPorSegmentoView, name="gastosPorSegmento"),
     path('gastosPorMes/', v.gastosPorMesView, name="gastosPorMes"),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    import debug_toolbar
-    urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]
