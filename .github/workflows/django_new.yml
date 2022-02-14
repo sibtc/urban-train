@@ -1,0 +1,25 @@
+name: ERP - Sistema Integrado de Gestão Pessoal
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.9
+    - name: Copying configurations
+      run: |
+        cp contrib/env-sample .env
+    - name: Install Dependencies
+      run: |
+        pip install pipenv
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+    - name: Lint with flake8
+      run: |
+        flake8 .
