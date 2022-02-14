@@ -1,4 +1,4 @@
-# ERP - Sistema de Gerenciamento de gastos
+# ERP - Sistema de Gerenciamento de Gastos
 
 # Instalação
 Recomenda-se criar uma virtualenv para evitar conflitos de versões das bibliotecas instaladas no seu computador
