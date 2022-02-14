@@ -3,17 +3,23 @@ import json
 import re
 from datetime import datetime
 
-from django.db.models import Q, F
+from django.db.models import F, Q
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, FormView, CreateView, UpdateView, DeleteView, DetailView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    FormView,
+    ListView,
+    UpdateView,
+)
 
 from accounts.constants import MESES
-from tools.utils import change_comma_by_dot, add_one_month
-from utils import change_comma_by_dot
-from . import forms
-from . import models
+from tools.utils import add_one_month, change_comma_by_dot
+
+from . import forms, models
 
 
 class GastoListView(ListView):
@@ -23,22 +29,28 @@ class GastoListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(GastoListView, self).get_context_data(**kwargs)
         # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
-        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
-                              'segmento']
-        context['count'] = self.get_queryset().count()
+        context["columns"] = [
+            "parcelas_gasto",
+            "id",
+            "name",
+            "more_infos",
+            "opcoes_cartao",
+            "datagasto",
+            "total",
+            "segmento",
+        ]
+        context["count"] = self.get_queryset().count()
         return context
 
     def get_queryset(self):
         queryset = super(GastoListView, self).get_queryset()
-        if search := self.request.GET.get('search'):
+        if search := self.request.GET.get("search"):
             RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
             # Essa linha qdo quero trazer o ID
             if RE_INT.match(search):
                 queryset = queryset.filter(id=search)
             else:
-                queryset = queryset.filter(
-                    Q(name__icontains=search)
-                )
+                queryset = queryset.filter(Q(name__icontains=search))
         return queryset
         # return super().get_queryset().get(id=self.kwargs['pk'])
 
@@ -90,9 +102,7 @@ class GastoEditView(UpdateView):
         context = super(GastoEditView, self).get_context_data(**kwargs)
         if self.request.POST:
             context["forms"] = forms.GastoForm(self.request.POST, instance=self.object)
-            context["formset"] = forms.ParcelasFormSet(
-                self.request.POST, instance=self.object
-            )
+            context["formset"] = forms.ParcelasFormSet(self.request.POST, instance=self.object)
         else:
             context["forms"] = forms.GastoForm(instance=self.object)
             context["formset"] = forms.ParcelasFormSet(instance=self.object)
@@ -131,9 +141,17 @@ class ComercioListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(ComercioListView, self).get_context_data(**kwargs)
         # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
-        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
-                              'segmento']
-        context['count'] = self.get_queryset().count()
+        context["columns"] = [
+            "parcelas_gasto",
+            "id",
+            "name",
+            "more_infos",
+            "opcoes_cartao",
+            "datagasto",
+            "total",
+            "segmento",
+        ]
+        context["count"] = self.get_queryset().count()
         return context
 
     def get_queryset(self):
@@ -141,15 +159,13 @@ class ComercioListView(ListView):
 
         data = self.request.GET
 
-        if search := data.get('search'):
+        if search := data.get("search"):
             RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
             # Essa linha qdo quero trazer o ID do gasto
             if RE_INT.match(search):
                 queryset = queryset.filter(id=search)
             else:
-                queryset = queryset.filter(
-                    Q(description__icontains=search)
-                )
+                queryset = queryset.filter(Q(description__icontains=search))
 
         return queryset
 
@@ -216,7 +232,7 @@ class CityListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(CityListView, self).get_context_data(**kwargs)
         list_exam = models.City.objects.all()
-        context['current_segmento'] = list_exam
+        context["current_segmento"] = list_exam
         context["count"] = models.City.objects.count()
         return context
 
@@ -246,15 +262,23 @@ class CityCreateView(CreateView):
 
 class PecasListView(ListView):
     model = models.Pecas
-    template_name = 'website/pecas/pecas_list.html'
+    template_name = "website/pecas/pecas_list.html"
     paginate_by = 10
 
     def get_context_data(self, **kwargs):
         context = super(PecasListView, self).get_context_data(**kwargs)
         # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
-        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
-                              'segmento']
-        context['count'] = self.get_queryset().count()
+        context["columns"] = [
+            "parcelas_gasto",
+            "id",
+            "name",
+            "more_infos",
+            "opcoes_cartao",
+            "datagasto",
+            "total",
+            "segmento",
+        ]
+        context["count"] = self.get_queryset().count()
         return context
 
     def get_queryset(self):
@@ -263,42 +287,38 @@ class PecasListView(ListView):
 
         data = self.request.GET
 
-        if search := data.get('search'):
+        if search := data.get("search"):
             # Essa linha qdo quero trazer o ID do gasto
             if RE_INT.match(search):
                 queryset = queryset.filter(id=search)
             else:
-                queryset = queryset.filter(
-                    Q(comercio__description__icontains=search)
-                )
+                queryset = queryset.filter(Q(comercio__description__icontains=search))
 
         if type_vehicle := data.get("type_vehicle"):
-            queryset = queryset.filter(
-                Q(veiculo=type_vehicle)
-            )
+            queryset = queryset.filter(Q(veiculo=type_vehicle))
 
         return queryset
 
 
 class PecasCreateView(CreateView):
     model = models.Pecas
-    template_name = 'website/pecas/pecas_form.html'
+    template_name = "website/pecas/pecas_form.html"
     form_class = forms.PecasForm
 
     def get_context_data(self, **kwargs):
         context = super(PecasCreateView, self).get_context_data(**kwargs)
         if self.request.POST:
-            context['forms'] = forms.PecasForm(self.request.POST)
-            context['formset'] = forms.ItemPecasFormSet(self.request.POST)
+            context["forms"] = forms.PecasForm(self.request.POST)
+            context["formset"] = forms.ItemPecasFormSet(self.request.POST)
         else:
-            context['forms'] = forms.PecasForm()
-            context['formset'] = forms.ItemPecasFormSet()
+            context["forms"] = forms.PecasForm()
+            context["formset"] = forms.ItemPecasFormSet()
         return context
 
     def form_valid(self, form):
         context = self.get_context_data()
-        forms = context['forms']
-        formset = context['formset']
+        forms = context["forms"]
+        formset = context["formset"]
         if not forms.is_valid() or not formset.is_valid():
             return self.render_to_response(self.get_context_data(form=form))
         pecas = forms.save(commit=False)
@@ -314,17 +334,17 @@ class PecasCreateView(CreateView):
 
 class PecasEditView(UpdateView):
     model = models.Pecas
-    template_name = 'website/pecas/pecas_form.html'
+    template_name = "website/pecas/pecas_form.html"
     form_class = forms.PecasForm
 
     def get_context_data(self, **kwargs):
         context = super(PecasEditView, self).get_context_data(**kwargs)
         if self.request.POST:
-            context['forms'] = forms.PecasForm(self.request.POST, instance=self.object)
-            context['formset'] = forms.ItemPecasFormSet(self.request.POST, instance=self.object)
+            context["forms"] = forms.PecasForm(self.request.POST, instance=self.object)
+            context["formset"] = forms.ItemPecasFormSet(self.request.POST, instance=self.object)
         else:
-            context['forms'] = forms.PecasForm(instance=self.object)
-            context['formset'] = forms.ItemPecasFormSet(instance=self.object)
+            context["forms"] = forms.PecasForm(instance=self.object)
+            context["formset"] = forms.ItemPecasFormSet(instance=self.object)
         return context
 
     def form_valid(self, form):
@@ -358,8 +378,8 @@ class ItensPecasDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ItensPecasDetailView, self).get_context_data(**kwargs)
-        pecas_id = self.kwargs['pk']
-        name_pecas = context['pecas']
+        pecas_id = self.kwargs["pk"]
+        name_pecas = context["pecas"]
         queryset = models.Itenspecas.objects.filter(pecas=name_pecas)
         context["itenspecas"] = queryset
         context["pecas_id"] = pecas_id
@@ -376,48 +396,54 @@ class SegmentoListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(SegmentoListView, self).get_context_data(**kwargs)
         # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
-        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
-                              'segmento']
-        context['count'] = self.get_queryset().count()
+        context["columns"] = [
+            "parcelas_gasto",
+            "id",
+            "name",
+            "more_infos",
+            "opcoes_cartao",
+            "datagasto",
+            "total",
+            "segmento",
+        ]
+        context["count"] = self.get_queryset().count()
         return context
 
     def get_queryset(self):
         queryset = super(SegmentoListView, self).get_queryset()
 
         data = self.request.GET
-        if search := data.get('search'):
+        if search := data.get("search"):
             RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
             # Essa linha qdo quero trazer o ID do gasto
             if RE_INT.match(search):
                 queryset = queryset.filter(id=search)
             else:
-                queryset = queryset.filter(
-                    Q(name__icontains=search)
-                )
+                queryset = queryset.filter(Q(name__icontains=search))
         return queryset
 
 
 class SegmentoCreateView(CreateView):
     model = models.Gasto
-    template_name = 'website/gasto/segmento_form.html'
+    template_name = "website/gasto/segmento_form.html"
     form_class = forms.SegmentoForm
 
     def get_context_data(self, **kwargs):
         context = super(SegmentoCreateView, self).get_context_data(**kwargs)
         if self.request.POST:
-            context['forms'] = forms.SegmentoForm(self.request.POST)
+            context["forms"] = forms.SegmentoForm(self.request.POST)
         else:
-            context['forms'] = forms.SegmentoForm()
-            context['create_or_edit'] = 'CADASTRAR'
+            context["forms"] = forms.SegmentoForm()
+            context["create_or_edit"] = "CADASTRAR"
         return context
 
     def form_valid(self, form):
         context = self.get_context_data()
-        form = context['forms']
+        form = context["forms"]
         if not form.is_valid():
             return self.render_to_response(self.get_context_data(form=form))
         form.save()
-        return redirect('website_segmento_list')
+        return redirect("website_segmento_list")
 
 
 class SegmentoEditView(UpdateView):
@@ -432,7 +458,7 @@ class SegmentoEditView(UpdateView):
         else:
             context["forms"] = forms.SegmentoForm(instance=self.object)
             context["last_data"] = models.Gasto.objects.first()
-            context['create_or_edit'] = 'EDITAR'
+            context["create_or_edit"] = "EDITAR"
         return context
 
     def form_valid(self, form):
@@ -457,28 +483,35 @@ class GastoSegmentoListView(ListView):
 
     def get_queryset(self):
         queryset = super(GastoSegmentoListView, self).get_queryset()
-        if search := self.request.GET.get('search'):
+        if search := self.request.GET.get("search"):
             RE_INT = re.compile(r"^[-+]?([1-9]\d*|0)$")
             # Essa linha qdo quero trazer o ID
             if RE_INT.match(search):
                 queryset = queryset.filter(id=search)
             else:
-                queryset = queryset.filter(
-                    Q(name__icontains=search)
-                )
+                queryset = queryset.filter(Q(name__icontains=search))
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(GastoSegmentoListView, self).get_context_data(**kwargs)
         # get_columns_in_the_model = [field.name for field in models.Gasto._meta.get_fields()]
-        context['columns'] = ['parcelas_gasto', 'id', 'name', 'more_infos', 'opcoes_cartao', 'datagasto', 'total',
-                              'segmento']
-        context['count'] = self.get_queryset().count()
+        context["columns"] = [
+            "parcelas_gasto",
+            "id",
+            "name",
+            "more_infos",
+            "opcoes_cartao",
+            "datagasto",
+            "total",
+            "segmento",
+        ]
+        context["count"] = self.get_queryset().count()
         return context
 
 
 # RELATÓRIO DE GASTOS POR MÊS
 # ----------------------------------------------
+
 
 def gastosPorMesView(request):
     template = "website/gasto/gastosPorMes.html"
@@ -502,9 +535,9 @@ def _extracted_from_GastosPorMesView_4(request):
     if dtFinal == "":
         dtFinal = datetime(today.year, today.month + 1, today.day)
     qs = models.Gasto.objects.select_related("parcelas")
-    qs = qs.exclude(name__startswith='PIX')
-    qs = qs.exclude(name__startswith='TED')
-    qs = qs.exclude(name__startswith='OF')
+    qs = qs.exclude(name__startswith="PIX")
+    qs = qs.exclude(name__startswith="TED")
+    qs = qs.exclude(name__startswith="OF")
     qs = qs.filter(parcelas_gasto__data_parcela__range=[dtInicial, dtFinal])
     qs = qs.annotate(
         data_parcela=F("parcelas_gasto__data_parcela"),
@@ -519,9 +552,7 @@ def _extracted_from_GastosPorMesView_4(request):
     segmento_id = int(request.POST.get("segmento_id"))
     if segmento_id > 0:
         qs = qs.filter(segmento_id=segmento_id)
-    vlr_total = sum(
-        float(valor["valor_parcela"].replace(",", ".")) for valor in qs
-    )
+    vlr_total = sum(float(valor["valor_parcela"].replace(",", ".")) for valor in qs)
 
     segmentos = models.Segmento.objects.all()
     return {"data": qs, "total": vlr_total, "segmentos": segmentos}
@@ -529,23 +560,23 @@ def _extracted_from_GastosPorMesView_4(request):
 
 class AutoCompleteView(FormView):
     def get(self, request):
-        if q := request.GET.get('term', '').capitalize():
+        if q := request.GET.get("term", "").capitalize():
             gastos = models.Gasto.objects.filter(name__icontains=q)
             if gastos:
-                gastos.order_by('name').distinct('name')
+                gastos.order_by("name").distinct("name")
         else:
             gastos = models.Gasto.objects.all()
         results = []
         for gasto in gastos:
             if results:
-                if gasto.name not in results[0]['name']:
-                    gasto_json = {'name': gasto.name}
+                if gasto.name not in results[0]["name"]:
+                    gasto_json = {"name": gasto.name}
                     results.append(gasto_json)
             else:
-                gasto_json = {'name': gasto.name}
+                gasto_json = {"name": gasto.name}
                 results.append(gasto_json)
         data = json.dumps(results)
-        mimetype = 'application/json'
+        mimetype = "application/json"
         return HttpResponse(data, mimetype)
 
 
@@ -570,29 +601,23 @@ def _extracted_from_SubdividirSegmentosView_5(request, segmentos):
     else:
         # Qdo vem a data ela vem como str e precisamos paassa para o type datetime
         # já que qdo for mostrar no HTML ele espera datetime e não str
-        dtInicial = datetime.strptime(dtInicial, '%Y-%m-%d')
+        dtInicial = datetime.strptime(dtInicial, "%Y-%m-%d")
     if dtFinal == "":
         dtFinal = add_one_month()
     else:
         # Qdo vem a data ela vem como str e precisamos paassa para o type datetime
         # já que qdo for mostrar no HTML ele espera datetime e não str
-        dtFinal = datetime.strptime(dtFinal, '%Y-%m-%d')
-    list_ids_segmentos = list(
-        models.Segmento.objects.filter().values('id', 'name').order_by('id')
-    )
+        dtFinal = datetime.strptime(dtFinal, "%Y-%m-%d")
+    list_ids_segmentos = list(models.Segmento.objects.filter().values("id", "name").order_by("id"))
 
     dict_segmentos = {}
     for segmento in list_ids_segmentos:
         gastos_por_segmento = models.Gasto.objects.filter(
-            segmento_id=segmento['id'],
-            parcelas_gasto__data_parcela__range=[dtInicial, dtFinal]
+            segmento_id=segmento["id"], parcelas_gasto__data_parcela__range=[dtInicial, dtFinal]
         )
         if len(gastos_por_segmento) > 0:
-            dict_segmentos[segmento['name']] = len(gastos_por_segmento)
-    nv_dict = {
-        i: dict_segmentos[i]
-        for i in sorted(dict_segmentos, key=dict_segmentos.get, reverse=True)
-    }
+            dict_segmentos[segmento["name"]] = len(gastos_por_segmento)
+    nv_dict = {i: dict_segmentos[i] for i in sorted(dict_segmentos, key=dict_segmentos.get, reverse=True)}
 
     result = {
         "data": nv_dict,
@@ -647,8 +672,8 @@ def _extracted_from_GastoPorParcelasView_4(request):
         else:
             dtFinal = datetime(today.year, today.month, 30)
     qs = models.Gasto.objects.filter(
-        parcelas_gasto__parcelas__gt=1,
-        parcelas_gasto__data_parcela__range=[dtInicial, dtFinal])
+        parcelas_gasto__parcelas__gt=1, parcelas_gasto__data_parcela__range=[dtInicial, dtFinal]
+    )
     qs = qs.annotate(
         data_parcela=F("parcelas_gasto__data_parcela"),
         valor_parcela=F("parcelas_gasto__valor_parcela"),
@@ -657,9 +682,7 @@ def _extracted_from_GastoPorParcelasView_4(request):
     )
     qs = qs.values("id", "name", "parcelas", "numero_parcela", "valor_parcela", "data_parcela")
     qs = qs.order_by("parcelas_gasto__data_parcela")
-    vlr_total = sum(
-        float(change_comma_by_dot(valor["valor_parcela"])) for valor in qs
-    )
+    vlr_total = sum(float(change_comma_by_dot(valor["valor_parcela"])) for valor in qs)
 
     return {"data": qs, "columns": columns, "total": vlr_total, "meses": MESES}
 
@@ -669,10 +692,8 @@ def GastoPorSegmentoView(request):
     if request.method == "POST":
         context = _extracted_from_GastoPorSegmentoView_4(request)
     else:
-        segmentos = models.Segmento.objects.all().order_by('id')
-        context = {
-            "segmentos": segmentos
-        }
+        segmentos = models.Segmento.objects.all().order_by("id")
+        context = {"segmentos": segmentos}
     return render(request, template, context)
 
 
@@ -694,7 +715,7 @@ def _extracted_from_GastoPorSegmentoView_4(request):
         data_parcela=F("parcelas_gasto__data_parcela"),
         valor_parcela=F("parcelas_gasto__valor_parcela"),
         parcelas=F("parcelas_gasto__parcelas"),
-        numero_parcela=F("parcelas_gasto__numero_parcela")
+        numero_parcela=F("parcelas_gasto__numero_parcela"),
     )
     qs = qs.values("id", "name", "datagasto", "parcelas_gasto__data_parcela", "parcelas_gasto__valor_parcela")
     qs = qs.order_by("-datagasto")
@@ -703,7 +724,7 @@ def _extracted_from_GastoPorSegmentoView_4(request):
     # )
     vlr_total = 0.00
 
-    segmentos = models.Segmento.objects.all().order_by('id')
+    segmentos = models.Segmento.objects.all().order_by("id")
     return {
         "data": qs,
         "total": vlr_total,

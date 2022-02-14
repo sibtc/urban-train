@@ -1,36 +1,47 @@
 import re
-from django.db import models
-from django.core import validators
-from django.contrib.auth.models import AbstractBaseUser,UserManager, PermissionsMixin
-from accounts import constants
 from datetime import datetime as dt
+
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    PermissionsMixin,
+    UserManager,
+)
+from django.core import validators
+from django.db import models
+
+from accounts import constants
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(
-        'Apelido / Usuário', max_length=30, unique=True, validators=[
+        "Apelido / Usuário",
+        max_length=30,
+        unique=True,
+        validators=[
             validators.RegexValidator(
-                re.compile('^[\w.@+-]+$'),
-                'Informe um nome de usuário válido. '
-                'Este valor deve conter apenas letras, números '
-                'e os caracteres: @/./+/-/_ .', 'invalid'
+                re.compile(r"^[\w.@+-]+$"),
+                "Informe um nome de usuário válido. "
+                "Este valor deve conter apenas letras, números "
+                "e os caracteres: @/./+/-/_ .",
+                "invalid",
             )
-        ], help_text='Um nome curto que será usado para identificá-lo de forma única na plataforma'
+        ],
+        help_text="Um nome curto que será usado para identificá-lo de forma única na plataforma",
     )
-    name = models.CharField('Nome', max_length=100, blank=True)
-    email = models.EmailField('E-mail', unique=True)
-    is_staff = models.BooleanField('Equipe', default=False)
-    is_active = models.BooleanField('Ativo', default=True)
-    date_joined = models.DateTimeField('Data de Entrada', auto_now_add=True)
+    name = models.CharField("Nome", max_length=100, blank=True)
+    email = models.EmailField("E-mail", unique=True)
+    is_staff = models.BooleanField("Equipe", default=False)
+    is_active = models.BooleanField("Ativo", default=True)
+    date_joined = models.DateTimeField("Data de Entrada", auto_now_add=True)
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email"]
 
     objects = UserManager()
 
     class Meta:
-        verbose_name = 'Usuário'
-        verbose_name_plural = 'Usuários'
+        verbose_name = "Usuário"
+        verbose_name_plural = "Usuários"
 
     def __str__(self):
         return self.name or self.username
@@ -40,7 +51,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return str(self).split(" ")[0]
-
 
 
 class BaseManager(models.Manager):
@@ -60,8 +70,9 @@ class Base(models.Model):
     """
     Base parent model for all the models
     """
-    created_at = models.DateTimeField('Criado em', auto_now_add=True, null=True)
-    modified_at = models.DateTimeField('Atualizado em', auto_now=True, null=True)
+
+    created_at = models.DateTimeField("Criado em", auto_now_add=True, null=True)
+    modified_at = models.DateTimeField("Atualizado em", auto_now=True, null=True)
     status = models.BooleanField(choices=constants.STATUS, default=constants.ATIVO)
 
     objects = BaseManager()
@@ -77,19 +88,8 @@ class Base(models.Model):
         if not self.created_at:
             self.created_at = dt.now()
 
-        modified_at = kwargs.pop('update_timestamp', False)
+        modified_at = kwargs.pop("update_timestamp", False)
         if modified_at:
             self.modified_at = dt.now()
 
         super(Base, self).save(*args, **kwargs)
-
-    # Override delete method.
-    # def delete(self, **kwargs):
-    #     self._forced_delete = kwargs.pop('forced', False)
-    #     if not self._forced_delete:
-    #         model = self.__class__
-    #         kwargs.update({'deleted': True})
-    #         model.objects.using(self._state.db).filter(
-    #             pk=self.id).update(**kwargs)
-    #     else:
-    #         super(Base, self).delete(**kwargs)

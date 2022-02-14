@@ -1,33 +1,36 @@
 # coding=utf-8
-from django.contrib.auth import get_user_model
+from django.contrib.auth import REDIRECT_FIELD_NAME, get_user_model
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
+
 # from django.utils.http import is_safe_url
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login, logout as auth_logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, RedirectView, TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-
 
 
 User = get_user_model()
 
 
 class HomePageView(LoginRequiredMixin, TemplateView):
-    template_name = 'accounts/home.html'
+    template_name = "accounts/home.html"
+
 
 class LoginView(FormView):
     """
     Provides the ability to login as a user with a username and password
     """
-    success_url = '/'
+
+    success_url = "/"
     form_class = AuthenticationForm
     redirect_field_name = REDIRECT_FIELD_NAME
-    template_name = 'adminlte/login.html'
+    template_name = "adminlte/login.html"
 
-    @method_decorator(sensitive_post_parameters('password'))
+    @method_decorator(sensitive_post_parameters("password"))
     @method_decorator(csrf_protect)
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -58,7 +61,8 @@ class LogoutView(RedirectView):
     """
     Provides users the ability to logout
     """
-    url = '/'
+
+    url = "/"
 
     def get(self, request, *args, **kwargs):
         auth_logout(request)
