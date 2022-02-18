@@ -1,7 +1,7 @@
 # ERP - Sistema de Gerenciamento de Gastos
 
 # Instalação
-Recomenda-se criar uma virtualenv para evitar conflitos de versões das bibliotecas instaladas no seu computador
+
 > python -m venv .venv
 
 Para acessar
@@ -12,7 +12,7 @@ Para acessar
 
 Instalar as bibliotecas:
 
-- Atualizando o pip: 
+- Atualizando o pip:
 > *python -m pip install --upgrade pip*
 
 - *Windows*:
